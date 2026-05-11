@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Analiza Trenera - System Liga</title>
+<style>
+    body { font-family: 'Segoe UI', Arial; text-align: center; background-color: #f0f2f5; margin: 0; }
+    nav { background: #0078D4; padding: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    nav a { color: white; text-decoration: none; margin: 0 15px; font-weight: bold; }
+    h1 { color: #0078D4; margin-top: 30px; }
+    .container { display: flex; justify-content: center; padding: 20px; }
+    .card { 
+        background: white; padding: 30px; width: 450px; border-radius: 12px; 
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-top: 5px solid #d13438;
+    }
+    .team-name { color: #666; font-size: 1.1rem; margin-bottom: 20px; }
+    .danger-zone { background: #fff5f5; padding: 15px; border-radius: 8px; border: 1px solid #ffcdd2; }
+    .player-name { font-size: 1.8rem; font-weight: bold; color: #d13438; }
+    .bramki { font-size: 1.2rem; margin-top: 10px; }
+    .no-data { color: #888; font-style: italic; }
+    footer { margin-top: 50px; color: #888; font-size: 0.8rem; }
+</style>
+</head>
+<body>
+ 
+<nav>
+    <a href="{{ url_for('index') }}">Strona Główna</a>
+    <a href="{{ url_for('trener_select') }}">Wybierz drużynę do analizy</a>
+    {% if session.get('rola') == 'Administrator' %}
+        <a href="{{ url_for('admin_panel') }}">Panel Admina</a>
+    {% endif %}
+    <a href="{{ url_for('logout') }}">Wyloguj</a>
+</nav>
+
+ 
+<h1>Raport Skautingowy dla Trenera</h1>
+ 
+<div class="container">
+    <div class="card">
+        <div class="team-name">
+            Analiza dla drużyny: 
+            <strong>{{ team[0] if team else 'Nieznana' }}</strong>
+        </div>
+        <h3>⚠️ Największe zagrożenie</h3>
+
+        {% if player %}
+            <div class="danger-zone">
+                <p>Ten zawodnik strzelił Twojej drużynie najwięcej bramek:</p>
+                <div class="player-name">{{ player[0] }} {{ player[1] }}</div>
+                <div class="bramki">Liczba goli: <strong>{{ player[2] }}</strong></div>
+            </div>
+            <p style="margin-top: 20px; font-size: 0.9rem; color: #666;">
+                Zalecenie: Zacieśnij krycie tego zawodnika w kolejnym meczu!
+            </p>
+        {% else %}
+            <p class="no-data">Twoja drużyna nie straciła jeszcze żadnej bramki. Gratulacje dla defensywy!</p>
+        {% endif %}
+    </div>
+</div>
+ 
+<footer>
+    &copy; 2026 Moduł Analityczny "Liga" - Opracowano na potrzeby sztabu szkoleniowego
+</footer>
+ 
+</body>
+</html>
