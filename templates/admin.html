@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Panel Administratora</title>
+<style>
+    body { font-family: Arial; background:#f4f4f4; margin:0; }
+    h1 { text-align:center; margin-top:20px; }
+    a { text-decoration:none; }
+    table { width: 80%; margin: 20px auto; border-collapse: collapse; background: white; }
+    th, td { border: 1px solid #ddd; padding: 12px; text-align:center; }
+    tr:nth-child(even) { background-color: #f2f2f2; }
+    .btn { padding: 5px 10px; text-decoration: none; color: white; border-radius: 3px; font-size:0.9em; }
+    nav { background:#0078D4; padding:10px 20px; color:white; }
+    nav a { color:white; margin-right:15px; }
+</style>
+</head>
+<body>
+<nav>
+    <a href="{{ url_for('index') }}">Strona główna</a>
+    <a href="{{ url_for('logout') }}">Wyloguj</a>
+</nav>
+
+<h1>Zarządzanie Użytkownikami</h1>
+
+<table>
+<tr><th>ID</th><th>Login</th><th>Rola</th><th>Akcje</th></tr>
+{% for user in users %}
+<tr>
+    <td>{{ user[0] }}</td>
+    <td>{{ user[1] }}</td>
+    <td><b>{{ user[2] }}</b></td>
+    <td>
+        <a href="{{ url_for('promote', uid=user[0], role='Trener') }}" class="btn" style="background:#f39c12">Daj Trenera</a>
+        <a href="{{ url_for('promote', uid=user[0], role='Uzytkownik') }}" class="btn" style="background:#7f8c8d">Zdejmij</a>
+        <a href="{{ url_for('promote', uid=user[0], role='Administrator') }}" class="btn" style="background:#0078D4">Admin</a>
+    </td>
+</tr>
+{% endfor %}
+</table>
+</body>
+</html>

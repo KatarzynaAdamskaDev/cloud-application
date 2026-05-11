@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Admin - Mecze</title>
+<style>
+ body { font-family:sans-serif; background:#f4f4f4; margin:0; }
+ nav { background:#0078D4; color:white; padding:10px 20px; }
+ nav a { color:white; margin-right:15px; text-decoration:none; }
+ table { width:95%; margin:20px auto; border-collapse:collapse; background:white; }
+ th, td { border:1px solid #ddd; padding:8px; text-align:center; }
+ tr:nth-child(even){background:#f9f9f9;}
+ form { margin:20px auto; width:95%; background:white; padding:15px; border-radius:8px; }
+ input, select { padding:5px; margin:5px; }
+ button { padding:6px 12px; }
+</style>
+</head>
+<body>
+<nav>
+    <a href="{{ url_for('index') }}">Strona główna</a>
+    <a href="{{ url_for('admin_panel') }}">Użytkownicy</a>
+    <a href="{{ url_for('admin_druzyny') }}">Drużyny</a>
+    <a href="{{ url_for('admin_zawodnicy') }}">Zawodnicy</a>
+    <a href="{{ url_for('admin_mecze') }}">Mecze</a>
+    <a href="{{ url_for('admin_gole') }}">Gole</a>
+    <a href="{{ url_for('logout') }}">Wyloguj</a>
+</nav>
+
+<h2 style="text-align:center;">Zarządzanie meczami</h2>
+
+<form method="POST">
+    <b>Dodaj mecz:</b><br>
+    Gospodarz:
+    <select name="gospodarz_id" required>
+        {% for t in teams %}
+        <option value="{{ t[0] }}">{{ t[1] }}</option>
+        {% endfor %}
+    </select>
+    Gość:
+    <select name="gosc_id" required>
+        {% for t in teams %}
+        <option value="{{ t[0] }}">{{ t[1] }}</option>
+        {% endfor %}
+    </select><br>
+    Data (YYYY-MM-DD HH:MM:SS): <input type="text" name="data" required>
+    Wynik Gosp: <input type="number" name="wynik_g">
+    Wynik Gość: <input type="number" name="wynik_gosc">
+    <button type="submit">Dodaj</button>
+</form>
+
+<table>
+<tr><th>ID</th><th>Data</th><th>Gospodarz</th><th>Wynik</th><th>Gość</th><th>Akcje</th></tr>
+{% for m in matches %}
+<tr>
+    <td>{{ m[0] }}</td>
+    <td>{{ m[1] }}</td>
+    <td>{{ m[2] }}</td>
+    <td>{{ m[4] }} : {{ m[5] }}</td>
+    <td>{{ m[3] }}</td>
+    <td><a href="{{ url_for('admin_mecz_delete', mecz_id=m[0]) }}">Usuń</a></td>
+</tr>
+{% else %}
+<tr><td colspan="6">Brak meczów.</td></tr>
+{% endfor %}
+</table>
+</body>
+</html>

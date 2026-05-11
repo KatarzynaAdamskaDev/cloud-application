@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Admin - Zawodnicy</title>
+<style>
+ body { font-family:sans-serif; background:#f4f4f4; margin:0; }
+ nav { background:#0078D4; color:white; padding:10px 20px; }
+ nav a { color:white; margin-right:15px; text-decoration:none; }
+ table { width:90%; margin:20px auto; border-collapse:collapse; background:white; }
+ th, td { border:1px solid #ddd; padding:8px; text-align:center; }
+ tr:nth-child(even){background:#f9f9f9;}
+ form { margin:20px auto; width:90%; background:white; padding:15px; border-radius:8px; }
+ input, select { padding:5px; margin:5px; }
+ button { padding:6px 12px; }
+</style>
+</head>
+<body>
+<nav>
+    <a href="{{ url_for('index') }}">Strona główna</a>
+    <a href="{{ url_for('admin_panel') }}">Użytkownicy</a>
+    <a href="{{ url_for('admin_druzyny') }}">Drużyny</a>
+    <a href="{{ url_for('admin_zawodnicy') }}">Zawodnicy</a>
+    <a href="{{ url_for('admin_mecze') }}">Mecze</a>
+    <a href="{{ url_for('admin_gole') }}">Gole</a>
+    <a href="{{ url_for('logout') }}">Wyloguj</a>
+</nav>
+
+<h2 style="text-align:center;">Zarządzanie zawodnikami</h2>
+
+<form method="POST">
+    <b>Dodaj zawodnika:</b><br>
+    Imię: <input type="text" name="imie" required>
+    Nazwisko: <input type="text" name="nazwisko" required>
+    Pozycja: <input type="text" name="pozycja" required>
+    Drużyna:
+    <select name="druzyna_id" required>
+        {% for t in teams %}
+        <option value="{{ t[0] }}">{{ t[1] }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">Dodaj</button>
+</form>
+
+<table>
+<tr><th>ID</th><th>Imię</th><th>Nazwisko</th><th>Pozycja</th><th>Drużyna</th><th>Akcje</th></tr>
+{% for p in players %}
+<tr>
+    <td>{{ p[0] }}</td>
+    <td>{{ p[1] }}</td>
+    <td>{{ p[2] }}</td>
+    <td>{{ p[3] }}</td>
+    <td>{{ p[4] }}</td>
+    <td><a href="{{ url_for('admin_zawodnik_delete', player_id=p[0]) }}">Usuń</a></td>
+</tr>
+{% else %}
+<tr><td colspan="6">Brak zawodników.</td></tr>
+{% endfor %}
+</table>
+</body>
+</html>

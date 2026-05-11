@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Wybór drużyny - Trener</title>
+<style>
+ body { font-family:sans-serif; background:#f4f4f4; margin:0; text-align:center; }
+ nav { background:#0078D4; color:white; padding:10px 20px; }
+ nav a { color:white; margin-right:15px; text-decoration:none; }
+ .box { max-width:500px; margin:30px auto; background:white; padding:20px; border-radius:8px; }
+ ul { list-style:none; padding:0; }
+ li { margin:8px 0; }
+ a.team-link { text-decoration:none; color:#0078D4; font-weight:bold; }
+</style>
+</head>
+<body>
+<nav>
+    <a href="{{ url_for('index') }}">Strona główna</a>
+    <a href="{{ url_for('logout') }}">Wyloguj</a>
+</nav>
+
+<div class="box">
+    <h2>Wybierz drużynę do analizy</h2>
+    <ul>
+        {% for t in teams %}
+        <li><a class="team-link" href="{{ url_for('trener_view', team_id=t[0]) }}">{{ t[1] }}</a></li>
+        {% else %}
+        <li>Brak drużyn.</li>
+        {% endfor %}
+    </ul>
+</div>
+</body>
+</html>
