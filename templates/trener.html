@@ -49,6 +49,8 @@
                 <div class="player-name">{{ player[0] }} {{ player[1] }}</div>
                 <div class="bramki">Liczba goli: <strong>{{ player[2] }}</strong></div>
             </div>
+            <p><a href="{{ url_for('trener_historia', team_id=request.view_args.get('team_id', 1)) }}">Historia spotkań tej drużyny</a></p>
+
             <p style="margin-top: 20px; font-size: 0.9rem; color: #666;">
                 Zalecenie: Zacieśnij krycie tego zawodnika w kolejnym meczu!
             </p>
