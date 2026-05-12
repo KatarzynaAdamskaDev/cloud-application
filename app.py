@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
-import pyodbc
+#import pyodbc
 import os
 import hashlib
 from functools import wraps
@@ -10,33 +10,7 @@ app.secret_key = os.environ.get("SECRET_KEY", "projekt-liga-2026-bezpieczny-kluc
 CACHED_DRIVER = None
 
 
-def get_db_conn():
-    """Połączenie z Azure SQL, z cache'owaniem sterownika (pseudo-singleton)."""
-    global CACHED_DRIVER
-    raw_conn_str = os.environ.get("DATABASE_URL")
-    if not raw_conn_str:
-        return None
 
-    drivers = [CACHED_DRIVER] if CACHED_DRIVER else [
-        '{ODBC Driver 18 for SQL Server}',
-        '{ODBC Driver 17 for SQL Server}'
-    ]
-
-    for driver in drivers:
-        if not driver:
-            continue
-        try:
-            conn_str = raw_conn_str.replace("{ODBC Driver 17 for SQL Server}", driver)
-            if "18" in driver:
-                conn_str += ";Encrypt=yes;TrustServerCertificate=yes;"
-                conn_str = conn_str.replace("TrustServerCertificate=no", "TrustServerCertificate=yes")
-
-            conn = pyodbc.connect(conn_str, timeout=3)
-            CACHED_DRIVER = driver
-            return conn
-        except:
-            continue
-    return None
 
 
 def hash_password(pwd: str) -> str:
