@@ -37,6 +37,7 @@
             <a href="{{ url_for('druzyny_list') }}">Drużyny</a> |
             <a href="{{ url_for('zawodnicy_list') }}">Zawodnicy</a> |
             <a href="{{ url_for('mecze_list') }}">Mecze</a>
+            <a href="{{ url_for('strzelcy') }}">Strzelcy</a>
 
             {% if session.get('rola') == 'Trener' or session.get('rola') == 'Administrator' %}
                 | <a href="{{ url_for('trener_select') }}" style="color:#ffeb3b;">Panel trenera</a>
