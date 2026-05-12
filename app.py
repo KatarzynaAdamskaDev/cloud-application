@@ -910,5 +910,35 @@ def admin_gol_delete(gol_id):
     return redirect(url_for("admin_gole"))
 
 
+@app.route("/strzelcy")
+def strzelcy():
+    conn = get_db_conn()
+    rows = []
+    if not conn:
+        flash("Brak połączenia z bazą danych.", "danger")
+        return render_template("strzelcy.html", rows=rows)
+
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT 
+                z.Imie,
+                z.Nazwisko,
+                d.Nazwa,
+                COUNT(g.GolID) AS Gole
+            FROM Zawodnik z
+            JOIN Druzyna d ON z.DruzynaID = d.DruzynaID
+            LEFT JOIN Gol g ON g.ZawodnikID = z.ZawodnikID
+            GROUP BY z.Imie, z.Nazwisko, d.Nazwa
+            ORDER BY Gole DESC
+        """)
+        rows = cursor.fetchall()
+    finally:
+        conn.close()
+
+    return render_template("strzelcy.html", rows=rows)
+
+
+
 if __name__ == "__main__":
     app.run(debug=True)
