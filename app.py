@@ -998,6 +998,7 @@ def tabela_ligowa():
 
     return render_template("tabela.html", rows=rows)
 
+
 @app.route("/terminarz")
 def terminarz():
     conn = get_db_conn()
@@ -1033,6 +1034,7 @@ def terminarz():
         conn.close()
 
     return render_template("terminarz.html", sezon=sezon, mecze=mecze)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
