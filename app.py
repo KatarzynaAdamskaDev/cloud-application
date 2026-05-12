@@ -938,6 +938,31 @@ def strzelcy():
 
     return render_template("strzelcy.html", rows=rows)
 
+@app.route("/tabela")
+def tabela_ligowa():
+    conn = get_db_conn()
+    rows = []
+    if not conn:
+        flash("Brak połączenia z bazą danych.", "danger")
+        return render_template("tabela.html", rows=rows)
+
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT 
+                d.DruzynaID,
+                d.Nazwa,
+                d.Miasto,
+                d.Punkty
+            FROM Druzyna d
+            ORDER BY d.Punkty DESC, d.Nazwa
+        """)
+        rows = cursor.fetchall()
+    finally:
+        conn.close()
+
+    return render_template("tabela.html", rows=rows)
+
 
 
 if __name__ == "__main__":
