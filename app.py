@@ -442,6 +442,41 @@ def trener_view(team_id):
 
     return render_template("trener.html", team=team, player=player)
 
+@app.route("/trener/historia/<int:team_id>")
+@role_required("Trener", "Administrator")
+def trener_historia(team_id):
+    conn = get_db_conn()
+    team = None
+    mecze = []
+    if not conn:
+        flash("Brak połączenia z bazą danych.", "danger")
+        return render_template("trener_historia.html", team=team, mecze=mecze)
+
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT Nazwa FROM Druzyna WHERE DruzynaID = ?", (team_id,))
+        team = cursor.fetchone()
+
+        cursor.execute("""
+            SELECT 
+                m.DataMeczu,
+                d1.Nazwa AS Gospodarz,
+                d2.Nazwa AS Gosc,
+                m.WynikGospodarz,
+                m.WynikGosc
+            FROM Mecz m
+            JOIN Druzyna d1 ON m.DruzynaGospodarzID = d1.DruzynaID
+            JOIN Druzyna d2 ON m.DruzynaGoscID = d2.DruzynaID
+            WHERE m.DruzynaGospodarzID = ? OR m.DruzynaGoscID = ?
+            ORDER BY m.DataMeczu DESC
+        """, (team_id, team_id))
+        mecze = cursor.fetchall()
+    finally:
+        conn.close()
+
+    return render_template("trener_historia.html", team=team, mecze=mecze)
+
+
 
 # ---------- PANEL ADMINA: ROLE ----------
 
