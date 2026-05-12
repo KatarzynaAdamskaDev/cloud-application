@@ -963,6 +963,42 @@ def tabela_ligowa():
 
     return render_template("tabela.html", rows=rows)
 
+@app.route("/terminarz")
+def terminarz():
+    conn = get_db_conn()
+    sezon = None
+    mecze = []
+    if not conn:
+        flash("Brak połączenia z bazą danych.", "danger")
+        return render_template("terminarz.html", sezon=sezon, mecze=mecze)
+
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT TOP 1 TerminarzID, NazwaSezonu, DataRozpoczecia, DataZakonczenia, Status
+            FROM TerminarzRozgrywek
+            ORDER BY DataRozpoczecia DESC
+        """)
+        sezon = cursor.fetchone()
+
+        cursor.execute("""
+            SELECT 
+                m.DataMeczu,
+                d1.Nazwa,
+                d2.Nazwa,
+                m.WynikGospodarz,
+                m.WynikGosc
+            FROM Mecz m
+            JOIN Druzyna d1 ON m.DruzynaGospodarzID = d1.DruzynaID
+            JOIN Druzyna d2 ON m.DruzynaGoscID = d2.DruzynaID
+            ORDER BY m.DataMeczu
+        """)
+        mecze = cursor.fetchall()
+    finally:
+        conn.close()
+
+    return render_template("terminarz.html", sezon=sezon, mecze=mecze)
+
 
 
 if __name__ == "__main__":
