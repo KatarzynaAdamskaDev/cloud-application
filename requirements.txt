@@ -1,4 +1,3 @@
 flask
 pyodbc
 cryptography
-gunicorn
