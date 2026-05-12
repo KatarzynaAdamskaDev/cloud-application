@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Terminarz rozgrywek</title>
+<style>
+    body { font-family: Arial; background:#f4f4f4; margin:0; }
+    nav { background:#0078D4; padding:10px 20px; color:white; }
+    nav a { color:white; margin-right:15px; text-decoration:none; }
+    .box { background:white; max-width:900px; margin:20px auto; padding:20px; border-radius:8px; }
+    table { width:100%; border-collapse: collapse; margin-top:15px; }
+    th, td { border:1px solid #ddd; padding:8px; text-align:center; }
+</style>
+</head>
+<body>
+<nav>
+    <a href="{{ url_for('index') }}">Strona główna</a>
+    <a href="{{ url_for('mecze_list') }}">Mecze</a>
+</nav>
+
+<div class="box">
+    <h2>Terminarz rozgrywek</h2>
+    {% if sezon %}
+        <p>Sezon: <b>{{ sezon[1] }}</b></p>
+        <p>Od: {{ sezon[2] }} do: {{ sezon[3] }} | Status: {{ sezon[4] }}</p>
+    {% else %}
+        <p>Brak zdefiniowanego terminarza.</p>
+    {% endif %}
+
+    <h3>Mecze</h3>
+    <table>
+        <tr>
+            <th>Data</th>
+            <th>Gospodarz</th>
+            <th>Gość</th>
+            <th>Wynik</th>
+        </tr>
+        {% for m in mecze %}
+        <tr>
+            <td>{{ m[0] }}</td>
+            <td>{{ m[1] }}</td>
+            <td>{{ m[2] }}</td>
+            <td>{{ m[3] if m[3] is not none else '?' }} : {{ m[4] if m[4] is not none else '?' }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+</body>
+</html>
