@@ -167,7 +167,6 @@ tr:nth-child(even) {
 
 thead tr:hover {
     background: var(--primary) !important;
-    cursor: default;
 }
 
 tr:hover {
