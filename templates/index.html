@@ -15,7 +15,7 @@
     </div>
 
     <div class="nav-right">
-        <a href="{{ url_for('index') }}">Liga</a>
+        <a href="{{ url_for('index') }}">Starts</a>
         <a href="{{ url_for('druzyny_list') }}">Drużyny</a>
         <a href="{{ url_for('zawodnicy_list') }}">Zawodnicy</a>
         <a href="{{ url_for('mecze_list') }}">Mecze</a>
@@ -110,11 +110,11 @@
         <div class="card">
             <h3>Najlepszy zawodnik</h3>
             {% if data.player %}
-                <p><b>{{ data.player[0] }} {{ data.player[1] }}</b></p>
-                <p>Gole: <b>{{ data.player[2] }}</b></p>
-                <p>Asysty: <b>{{ data.player[3] }}</b></p>
+                <p><b>{{ data.player.nazwa }}</b></p>
+                <p>Gole: <b>{{ data.player.gole }}</b></p>
+                <p>Asysty: <b>{{ data.player.asysty }}</b></p>
             {% else %}
-                <p>Brak danych.</p>
+                 <p>Brak danych.</p>
             {% endif %}
         </div>
 
