@@ -1221,32 +1221,33 @@ def admin_gol_delete(gol_id):
 
 @app.route('/api/lost_goals/<int:team_id>')
 def api_lost_goals(team_id):
-    conn = get_db_connection()
+    conn = get_db_conn()
     cur = conn.cursor()
 
-    # Przykład: liczba straconych goli w kolejnych meczach
     cur.execute("""
-        SELECT m.data_meczu,
-               SUM(
-                   CASE 
-                       WHEN g.druzyna_id != %s THEN 1
-                       ELSE 0
-                   END
-               ) AS lost_goals
-        FROM mecze m
-        LEFT JOIN gole g ON g.mecz_id = m.id
-        WHERE m.gospodarz_id = %s OR m.gosc_id = %s
-        GROUP BY m.data_meczu
-        ORDER BY m.data_meczu
+        SELECT 
+            m.DataMeczu,
+            SUM(
+                CASE 
+                    WHEN g.DruzynaID != ? THEN 1
+                    ELSE 0
+                END
+            ) AS LostGoals
+        FROM Mecz m
+        LEFT JOIN Gol g ON g.MeczID = m.MeczID
+        WHERE m.DruzynaGospodarzID = ? OR m.DruzynaGoscID = ?
+        GROUP BY m.DataMeczu
+        ORDER BY m.DataMeczu
     """, (team_id, team_id, team_id))
 
     rows = cur.fetchall()
     conn.close()
 
-    labels = [r[0].strftime('%Y-%m-%d') if hasattr(r[0], 'strftime') else str(r[0]) for r in rows]
+    labels = [str(r[0]) for r in rows]
     values = [r[1] for r in rows]
 
     return {'labels': labels, 'values': values}
+
 
 
 
