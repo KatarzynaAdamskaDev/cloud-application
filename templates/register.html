@@ -23,10 +23,10 @@
         <a href="{{ url_for('terminarz') }}">Terminarz</a>
 
         {% if not session.get('user_login') %}
-            <a href="{{ url_for('login') }}">Logowanie</a>
+            <a class="nav-highlight" href="{{ url_for('login') }}">Logowanie</a>
         {% endif %}
 
-        {% if session.get('rola') in ['Trener'] %}
+        {% if session.get('rola') == 'Trener' %}
             <a class="nav-highlight" href="{{ url_for('trener_select') }}">Panel trenera</a>
         {% endif %}
 
@@ -40,10 +40,12 @@
     </div>
 </nav>
 
+
 <div class="container">
 
-    <div class="profile-box">
-        <h2>Rejestracja</h2>
+    <div class="card" style="max-width: 420px; margin: 40px auto; padding: 30px;">
+
+        <h2 style="text-align:center; margin-bottom: 20px;">Rejestracja</h2>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -54,18 +56,22 @@
         {% endwith %}
 
         <form method="POST">
+
             <label>Login:</label>
             <input type="text" name="login" required>
 
             <label>Hasło:</label>
             <input type="password" name="password" required>
 
-            <button class="btn" type="submit">Utwórz konto</button>
+            <button class="btn" style="width: 100%; margin-top: 15px;">Utwórz konto</button>
+
         </form>
 
-        <p>Masz już konto?  
+        <p style="text-align:center; margin-top: 15px;">
+            Masz już konto?
             <a href="{{ url_for('login') }}">Zaloguj się</a>
         </p>
+
     </div>
 
 </div>
