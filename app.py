@@ -117,68 +117,59 @@ def aktualizuj_punkty_po_meczu(cursor, gosp_id, gosc_id, wynik_g, wynik_gosc):
 
 @app.route("/")
 def index():
-    """
-    Widok główny:
-    - publiczny (Gość też widzi)
-    - lider rozgrywek, najlepszy zawodnik, tabela meczów, status sezonu.
-    """
     conn = get_db_conn()
-    data = {"team": None, "player": None, "season": None, "matches": []}
-
     if not conn:
         flash("Brak połączenia z bazą danych.", "danger")
-        return render_template("index.html", data=data)
+        return render_template("index.html", data={})
 
-    try:
-        cursor = conn.cursor()
+    cursor = conn.cursor()
 
-        # Najlepszy zawodnik (drzewo decyzyjne)
-        cursor.execute("""
-            SELECT 
-                z.Imie,
-                z.Nazwisko,
-                COUNT(g.GolID) AS Gole,
-                0 AS Asysty
-            FROM Zawodnik z
-            LEFT JOIN Gol g ON g.ZawodnikID = z.ZawodnikID
-            GROUP BY z.Imie, z.Nazwisko
-        """)
-        data["player"] = analiza_skutecznosci(cursor.fetchall())
+    # Najlepszy zawodnik
+    cursor.execute("""
+        SELECT 
+            z.Imie,
+            z.Nazwisko,
+            COUNT(g.GolID) AS Gole,
+            0 AS Asysty
+        FROM Zawodnik z
+        LEFT JOIN Gol g ON g.ZawodnikID = z.ZawodnikID
+        GROUP BY z.Imie, z.Nazwisko
+    """)
+    best_player = analiza_skutecznosci(cursor.fetchall())
 
-        # Lider tabeli (na podstawie pola Punkty)
-        cursor.execute("""
-            SELECT TOP 1 Nazwa, Punkty 
-            FROM Druzyna 
-            ORDER BY Punkty DESC
-        """)
-        data["team"] = cursor.fetchone()
+    # Lider tabeli
+    cursor.execute("""
+        SELECT TOP 1 Nazwa, Punkty 
+        FROM Druzyna 
+        ORDER BY Punkty DESC
+    """)
+    lider = cursor.fetchone()
 
-        # Status sezonu (TerminarzRozgrywek)
-        cursor.execute("""
-            SELECT TOP 1 NazwaSezonu, Status 
-            FROM TerminarzRozgrywek 
-            ORDER BY DataRozpoczecia DESC
-        """)
-        data["season"] = cursor.fetchone()
+    # Status sezonu
+    cursor.execute("""
+        SELECT TOP 1 NazwaSezonu, Status 
+        FROM TerminarzRozgrywek 
+        ORDER BY DataRozpoczecia DESC
+    """)
+    sezon = cursor.fetchone()
 
-        # Wszystkie mecze
-        cursor.execute("""
-            SELECT 
-                m.DataMeczu,
-                d1.Nazwa AS Gospodarz,
-                d2.Nazwa AS Gosc,
-                m.WynikGospodarz,
-                m.WynikGosc
-            FROM Mecz m
-            JOIN Druzyna d1 ON m.DruzynaGospodarzID = d1.DruzynaID
-            JOIN Druzyna d2 ON m.DruzynaGoscID = d2.DruzynaID
-            ORDER BY m.DataMeczu DESC
-        """)
-        data["matches"] = cursor.fetchall()
-    finally:
-        conn.close()
+    # Mecze
+    cursor.execute("""
+        SELECT 
+            m.DataMeczu,
+            d1.Nazwa AS Gospodarz,
+            d2.Nazwa AS Gosc,
+            m.WynikGospodarz,
+            m.WynikGosc
+        FROM Mecz m
+        JOIN Druzyna d1 ON m.DruzynaGospodarzID = d1.DruzynaID
+        JOIN Druzyna d2 ON m.DruzynaGoscID = d2.DruzynaID
+        ORDER BY m.DataMeczu DESC
+    """)
+    matches = cursor.fetchall()
 
-    cursor.execute("SELECT id, nazwa FROM druzyny ORDER BY nazwa")
+    # Drużyny do wykresu
+    cursor.execute("SELECT DruzynaID, Nazwa FROM Druzyna ORDER BY Nazwa")
     teams = cursor.fetchall()
 
     conn.close()
@@ -191,7 +182,7 @@ def index():
         'teams': teams
     }
 
-    return render_template('index.html', data=data)
+    return render_template("index.html", data=data)
 
 
 @app.route("/druzyny")
