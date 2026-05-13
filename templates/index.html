@@ -12,7 +12,7 @@
 <!-- ========================= NAVBAR ========================= -->
 <nav class="nav-main">
     <div class="nav-left">
-        <span class="logo">⚽ LIGA</span>
+        <span class="logo">LIGA</span>
     </div>
 
     <div class="nav-right">
@@ -123,28 +123,25 @@
 
     <!-- ========================= WYKRES (opcjonalny) ========================= -->
     <div class="card chart-card">
-        <h3>Wykres – stracone gole (wybierz drużynę)</h3>
+    <h3>Wykres – stracone gole (wybierz drużynę)</h3>
 
-        <select id="teamSelect" class="input-select">
-            <option value="" disabled selected>Wybierz drużynę...</option>
-            {% for m in data.matches %}
-                <option value="{{ m[1] }}">{{ m[1] }}</option>
-                <option value="{{ m[2] }}">{{ m[2] }}</option>
-            {% endfor %}
-        </select>
+    <select id="teamSelect" class="input-select">
+        <option value="" disabled selected>Wybierz drużynę...</option>
+        {% for t in data.teams %}
+            <option value="{{ t[0] }}">{{ t[1] }}</option>
+        {% endfor %}
+    </select>
 
-        <canvas id="lostGoalsChart" height="120"></canvas>
-    </div>
-
+    <canvas id="lostGoalsChart" height="120"></canvas>
 </div>
 
 <script>
 let chart = null;
 
 document.getElementById("teamSelect").addEventListener("change", function() {
-    const teamName = this.value;
+    const teamId = this.value;
 
-    fetch(`/api/lost_goals/${teamName}`)
+    fetch(`/api/lost_goals/${teamId}`)
         .then(r => r.json())
         .then(data => {
             if (chart) chart.destroy();
@@ -158,11 +155,17 @@ document.getElementById("teamSelect").addEventListener("change", function() {
                         data: data.values,
                         backgroundColor: "#6a1b9a"
                     }]
+                },
+                options: {
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
                 }
             });
         });
 });
 </script>
+
 
 </body>
 </html>

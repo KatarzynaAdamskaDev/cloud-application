@@ -178,7 +178,20 @@ def index():
     finally:
         conn.close()
 
-    return render_template("index.html", data=data)
+    cursor.execute("SELECT id, nazwa FROM druzyny ORDER BY nazwa")
+    teams = cursor.fetchall()
+
+    conn.close()
+
+    data = {
+        'team': lider,
+        'player': best_player,
+        'season': sezon,
+        'matches': matches,
+        'teams': teams
+    }
+
+    return render_template('index.html', data=data)
 
 
 @app.route("/druzyny")
@@ -1214,6 +1227,36 @@ def admin_gol_delete(gol_id):
         conn.close()
 
     return redirect(url_for("admin_gole"))
+
+@app.route('/api/lost_goals/<int:team_id>')
+def api_lost_goals(team_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Przykład: liczba straconych goli w kolejnych meczach
+    cur.execute("""
+        SELECT m.data_meczu,
+               SUM(
+                   CASE 
+                       WHEN g.druzyna_id != %s THEN 1
+                       ELSE 0
+                   END
+               ) AS lost_goals
+        FROM mecze m
+        LEFT JOIN gole g ON g.mecz_id = m.id
+        WHERE m.gospodarz_id = %s OR m.gosc_id = %s
+        GROUP BY m.data_meczu
+        ORDER BY m.data_meczu
+    """, (team_id, team_id, team_id))
+
+    rows = cur.fetchall()
+    conn.close()
+
+    labels = [r[0].strftime('%Y-%m-%d') if hasattr(r[0], 'strftime') else str(r[0]) for r in rows]
+    values = [r[1] for r in rows]
+
+    return {'labels': labels, 'values': values}
+
 
 
 # =========================
