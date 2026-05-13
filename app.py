@@ -1169,5 +1169,30 @@ def terminarz():
         teams=teams
     )
 
+@app.route("/api/goals_per_team")
+def goals_per_team():
+    conn = get_db_conn()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT d.Nazwa, COUNT(g.GolID)
+        FROM Druzyna d
+        LEFT JOIN Mecz m ON d.DruzynaID = m.DruzynaGospodarzID OR d.DruzynaID = m.DruzynaGoscID
+        LEFT JOIN Gol g ON g.MeczID = m.MeczID
+        GROUP BY d.Nazwa
+        ORDER BY d.Nazwa
+    """)
+
+    labels = []
+    values = []
+
+    for row in cursor.fetchall():
+        labels.append(row[0])
+        values.append(row[1])
+
+    return {"labels": labels, "values": values}
+
+
+
 if __name__ == "__main__":
     app.run(debug=True)

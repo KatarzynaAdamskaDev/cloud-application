@@ -93,32 +93,33 @@
     </div>
 
     <!-- ================= WYKRES GOLI ================= -->
-    <div class="chart-card">
-        <h3><i class="fa-solid fa-chart-column"></i> Gole drużyn w sezonie</h3>
-        <canvas id="goalsChart"></canvas>
-    </div>
+   <div class="chart-card">
+    <h3><i class="fa-solid fa-chart-column"></i> Gole drużyn w sezonie</h3>
+    <canvas id="goalsChart"></canvas>
+</div>
 
-    <script>
-        fetch("/api/goals_per_team")
-            .then(r => r.json())
-            .then(data => {
-                new Chart(document.getElementById("goalsChart"), {
-                    type: "bar",
-                    data: {
-                        labels: data.labels,
-                        datasets: [{
-                            label: "Gole",
-                            data: data.values,
-                            backgroundColor: "#9c4dcc"
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: { legend: { display: false } }
-                    }
-                });
+<script>
+    fetch("/api/goals_per_team")
+        .then(r => r.json())
+        .then(data => {
+            new Chart(document.getElementById("goalsChart"), {
+                type: "bar",
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: "Gole",
+                        data: data.values,
+                        backgroundColor: "#9c4dcc"
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } }
+                }
             });
-    </script>
+        });
+</script>
+
 
     <!-- ================= TABELA MECZÓW ================= -->
     <div class="card">
