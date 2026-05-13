@@ -3,38 +3,50 @@
 <head>
 <meta charset="UTF-8">
 <title>Klasyfikacja strzelców</title>
-<style>
-    body { font-family: Arial; background:#f4f4f4; margin:0; }
-    nav { background:#0078D4; padding:10px 20px; color:white; }
-    nav a { color:white; margin-right:15px; text-decoration:none; }
-    table { width: 80%; margin: 20px auto; border-collapse: collapse; background: white; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align:center; }
-    tr:nth-child(even) { background-color: #f9f9f9; }
-</style>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 </head>
 <body>
+
 <nav>
-    <a href="{{ url_for('index') }}">Strona główna</a>
-    <a href="{{ url_for('zawodnicy_list') }}">Zawodnicy</a>
+    <div>
+        <a href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Strona główna</a>
+        <a href="{{ url_for('zawodnicy_list') }}"><i class="fa-solid fa-person-running"></i> Zawodnicy</a>
+    </div>
 </nav>
 
-<h2 style="text-align:center;">Klasyfikacja strzelców</h2>
+<div class="container">
+    <h2 style="text-align:center; color:var(--primary-dark);">
+        <i class="fa-solid fa-bullseye"></i> Klasyfikacja strzelców
+    </h2>
 
-<table>
-    <tr>
-        <th>#</th>
-        <th>Zawodnik</th>
-        <th>Drużyna</th>
-        <th>Gole</th>
-    </tr>
-    {% for r in rows %}
-    <tr>
-        <td>{{ loop.index }}</td>
-        <td>{{ r[0] }} {{ r[1] }}</td>
-        <td>{{ r[2] }}</td>
-        <td>{{ r[3] }}</td>
-    </tr>
-    {% endfor %}
-</table>
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Zawodnik</th>
+                    <th>Drużyna</th>
+                    <th>Gole</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in rows %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ r[0] }} {{ r[1] }}</td>
+                    <td>{{ r[2] }}</td>
+                    <td><b>{{ r[3] }}</b></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<footer>© 2026 System Liga</footer>
+
 </body>
 </html>

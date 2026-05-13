@@ -2,120 +2,161 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Liga - Panel Główny</title>
-    <style>
-        body { font-family: sans-serif; background: #f4f7f6; margin: 0; }
-        nav { background: #0078D4; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
-        .container { padding: 20px; max-width: 1100px; margin: auto; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 20px; }
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center; }
-        .card h3 { color: #0078D4; margin-top: 0; }
-        
-        .scroll-table { max-height: 350px; overflow-y: auto; border: 1px solid #ddd; background: white; border-radius: 8px; }
-        table { width: 100%; border-collapse: collapse; }
-        thead { background: #0078D4; color: white; position: sticky; top: 0; }
-        th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; }
-        
-        .flash { padding: 10px; margin-bottom: 20px; border-radius: 5px; color: white; text-align: center; }
-        .flash-success { background: #28a745; }
-        .flash-danger { background: #dc3545; }
-        .flash-info { background: #0078D4; }
-        .flash-warning { background: #f39c12; }
-        a { color:white; text-decoration:none; }
-    </style>
+    <title>Liga – Panel Główny</title>
+
+    <!-- FONT AWESOME -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- CHART.JS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- GLOBAL PREMIUM CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
+
 <body>
-    <nav>
-        <span>
-            {% if session.get('user_login') %}
-                <b>{{ session.get('user_login') }}</b> ({{ session.get('rola') }})
+
+<!-- ================= NAVBAR ================= -->
+<nav>
+    <span>
+        {% if session.get('user_login') %}
+            <i class="fa-solid fa-user"></i>
+            <b>{{ session.get('user_login') }}</b> ({{ session.get('rola') }})
+        {% else %}
+            <i class="fa-solid fa-user"></i> Gość (dostęp publiczny)
+        {% endif %}
+    </span>
+
+    <div>
+        <a href="{{ url_for('druzyny_list') }}"><i class="fa-solid fa-people-group"></i> Drużyny</a>
+        <a href="{{ url_for('zawodnicy_list') }}"><i class="fa-solid fa-person-running"></i> Zawodnicy</a>
+        <a href="{{ url_for('mecze_list') }}"><i class="fa-solid fa-futbol"></i> Mecze</a>
+        <a href="{{ url_for('strzelcy') }}"><i class="fa-solid fa-bullseye"></i> Strzelcy</a>
+        <a href="{{ url_for('tabela_ligowa') }}"><i class="fa-solid fa-ranking-star"></i> Tabela</a>
+
+        {% if session.get('rola') == 'Trener' or session.get('rola') == 'Administrator' %}
+            <a href="{{ url_for('trener_select') }}"><i class="fa-solid fa-chalkboard-user"></i> Panel trenera</a>
+        {% endif %}
+
+        {% if session.get('rola') == 'Administrator' %}
+            <a href="{{ url_for('admin_panel') }}"><i class="fa-solid fa-gear"></i> Panel admina</a>
+        {% endif %}
+
+        {% if session.get('user_login') %}
+            <a href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Wyloguj</a>
+        {% else %}
+            <a href="{{ url_for('login') }}"><i class="fa-solid fa-right-to-bracket"></i> Zaloguj</a>
+            <a href="{{ url_for('register') }}"><i class="fa-solid fa-user-plus"></i> Rejestracja</a>
+        {% endif %}
+    </div>
+</nav>
+
+<!-- ================= HEADER IMAGE ================= -->
+<img src="{{ url_for('static', filename='img/stadium.jpg') }}" 
+     style="width:100%; max-height:260px; object-fit:cover; box-shadow:0 4px 12px rgba(0,0,0,0.2);">
+
+<div class="container">
+
+    <!-- FLASH MESSAGES -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for cat, msg in messages %}
+                <div class="flash flash-{{cat}}">{{msg}}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- ================= TOP CARDS ================= -->
+    <div class="grid" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:20px;">
+
+        <!-- Lider rozgrywek -->
+        <div class="card">
+            <h3><i class="fa-solid fa-trophy"></i> Lider Rozgrywek</h3>
+            {% if data.team %}
+                <b>{{ data.team[0] }}</b><br>
+                Punkty: {{ data.team[1] }}
             {% else %}
-                Gość (dostęp publiczny)
-            {% endif %}
-        </span>
-        <div>
-            <a href="{{ url_for('druzyny_list') }}">Drużyny</a> |
-            <a href="{{ url_for('zawodnicy_list') }}">Zawodnicy</a> |
-            <a href="{{ url_for('mecze_list') }}">Mecze</a>
-            <a href="{{ url_for('strzelcy') }}">Strzelcy</a>
-            <a href="{{ url_for('tabela_ligowa') }}">Tabela</a>
-
-            {% if session.get('rola') == 'Trener' or session.get('rola') == 'Administrator' %}
-                | <a href="{{ url_for('trener_select') }}" style="color:#ffeb3b;">Panel trenera</a>
-            {% endif %}
-
-            {% if session.get('rola') == 'Administrator' %}
-                | <a href="{{ url_for('admin_panel') }}" style="color:yellow;">Panel admina</a>
-            {% endif %}
-
-            {% if session.get('user_login') %}
-                | <a href="{{ url_for('logout') }}">Wyloguj</a>
-            {% else %}
-                | <a href="{{ url_for('login') }}">Zaloguj</a>
-                | <a href="{{ url_for('register') }}">Rejestracja</a>
+                Brak danych
             {% endif %}
         </div>
-    </nav>
 
-    <div class="container">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for cat, msg in messages %}
-                    <div class="flash flash-{{cat}}">{{msg}}</div>
-                {% endfor %}
+        <!-- Najskuteczniejszy zawodnik -->
+        <div class="card">
+            <h3><i class="fa-solid fa-fire"></i> Najskuteczniejszy zawodnik</h3>
+            {% if data.player %}
+                <b>{{ data.player.nazwa }}</b><br>
+                Gole: {{ data.player.gole }} | Asysty: {{ data.player.asysty }}
+            {% else %}
+                Brak danych
             {% endif %}
-        {% endwith %}
-
-        <div class="grid">
-            <div class="card">
-                <h3>Lider Rozgrywek</h3>
-                {% if data.team %}
-                    <b>{{ data.team[0] }}</b><br>
-                    Punkty: {{ data.team[1] }}
-                {% else %}
-                    Brak danych
-                {% endif %}
-            </div>
-            <div class="card" style="border: 2px solid #0078D4;">
-                <h3>Najskuteczniejszy zawodnik (drzewo decyzyjne)</h3>
-                {% if data.player %}
-                    <b>{{ data.player.nazwa }}</b><br>
-                    Gole: {{ data.player.gole }} | Asysty: {{ data.player.asysty }}
-                {% else %}
-                    Brak danych
-                {% endif %}
-            </div>
-        </div>
-
-        <div class="card" style="text-align: left;">
-            <h3>Wertuj wyniki meczów</h3>
-            <div class="scroll-table">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Gospodarz</th>
-                            <th>Wynik</th>
-                            <th>Gość</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for m in data.matches %}
-                        <tr>
-                            <td>{{ m[0] }}</td>
-                            <td>{{ m[1] }}</td>
-                            <td><b>{{ m[3] if m[3] is not none else '?' }} : {{ m[4] if m[4] is not none else '?' }}</b></td>
-                            <td>{{ m[2] }}</td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="4">Brak zarejestrowanych meczów.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
         </div>
     </div>
+
+    <!-- ================= WYKRES GOLI ================= -->
+    <div class="chart-card">
+        <h3><i class="fa-solid fa-chart-column"></i> Gole drużyn w sezonie</h3>
+        <canvas id="goalsChart"></canvas>
+    </div>
+
+    <script>
+        fetch("/api/goals_per_team")
+            .then(r => r.json())
+            .then(data => {
+                new Chart(document.getElementById("goalsChart"), {
+                    type: "bar",
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: "Gole",
+                            data: data.values,
+                            backgroundColor: "#9c4dcc"
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            });
+    </script>
+
+    <!-- ================= TABELA MECZÓW ================= -->
+    <div class="card">
+        <h3><i class="fa-solid fa-list"></i> Ostatnie mecze</h3>
+
+        <div class="scroll-table" style="max-height:350px; overflow-y:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Gospodarz</th>
+                        <th>Wynik</th>
+                        <th>Gość</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in data.matches %}
+                    <tr>
+                        <td>{{ m[0] }}</td>
+                        <td>{{ m[1] }}</td>
+                        <td><b>{{ m[3] if m[3] is not none else '?' }} : {{ m[4] if m[4] is not none else '?' }}</b></td>
+                        <td>{{ m[2] }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4">Brak zarejestrowanych meczów.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<footer>
+    © 2026 System Liga – Aplikacja SaaS w Azure
+</footer>
+
 </body>
 </html>

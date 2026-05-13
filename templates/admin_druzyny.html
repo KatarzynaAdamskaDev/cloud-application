@@ -2,56 +2,80 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<title>Admin - Drużyny</title>
-<style>
- body { font-family:sans-serif; background:#f4f4f4; margin:0; }
- nav { background:#0078D4; color:white; padding:10px 20px; }
- nav a { color:white; margin-right:15px; text-decoration:none; }
- table { width:80%; margin:20px auto; border-collapse:collapse; background:white; }
- th, td { border:1px solid #ddd; padding:8px; text-align:center; }
- tr:nth-child(even){background:#f9f9f9;}
- form { margin:20px auto; width:80%; background:white; padding:15px; border-radius:8px; }
- input { padding:5px; margin:5px; }
- button { padding:6px 12px; }
-</style>
+<title>Admin – Drużyny</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
+
 <nav>
-    <a href="{{ url_for('index') }}">Strona główna</a>
-    <a href="{{ url_for('admin_panel') }}">Użytkownicy</a>
-    <a href="{{ url_for('admin_druzyny') }}">Drużyny</a>
-    <a href="{{ url_for('admin_zawodnicy') }}">Zawodnicy</a>
-    <a href="{{ url_for('admin_mecze') }}">Mecze</a>
-    <a href="{{ url_for('admin_gole') }}">Gole</a>
-    <a href="{{ url_for('logout') }}">Wyloguj</a>
+    <div>
+        <a href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Strona główna</a>
+        <a href="{{ url_for('admin_panel') }}"><i class="fa-solid fa-user-gear"></i> Użytkownicy</a>
+        <a href="{{ url_for('admin_druzyny') }}"><i class="fa-solid fa-people-group"></i> Drużyny</a>
+        <a href="{{ url_for('admin_zawodnicy') }}"><i class="fa-solid fa-person-running"></i> Zawodnicy</a>
+        <a href="{{ url_for('admin_mecze') }}"><i class="fa-solid fa-futbol"></i> Mecze</a>
+        <a href="{{ url_for('admin_gole') }}"><i class="fa-solid fa-bullseye"></i> Gole</a>
+    </div>
+    <div>
+        <a href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Wyloguj</a>
+    </div>
 </nav>
 
-<h2 style="text-align:center;">Zarządzanie drużynami</h2>
+<div class="container">
+    <h2 style="text-align:center; color:var(--primary-dark);">
+        Zarządzanie drużynami
+    </h2>
 
-<form method="POST">
-    <b>Dodaj drużynę:</b><br>
-    Nazwa: <input type="text" name="nazwa" required>
-    Miasto: <input type="text" name="miasto" required>
-    Punkty: <input type="number" name="punkty" value="0">
-    <button type="submit">Dodaj</button>
-</form>
+    <div class="card" style="max-width:800px; margin:auto;">
+        <form method="POST">
+            <b>Dodaj drużynę:</b><br><br>
+            Nazwa:
+            <input type="text" name="nazwa" required>
+            Miasto:
+            <input type="text" name="miasto" required>
+            Punkty:
+            <input type="number" name="punkty" value="0">
+            <button type="submit"><i class="fa-solid fa-plus"></i> Dodaj</button>
+        </form>
+    </div>
 
-<table>
-<tr><th>ID</th><th>Nazwa</th><th>Miasto</th><th>Punkty</th><th><td>
-    <a href="{{ url_for('admin_druzyna_edit', team_id=t[0]) }}">Edytuj</a> |
-    <a href="{{ url_for('admin_druzyna_delete', team_id=t[0]) }}">Usuń</a>
-</td></th></tr>
-{% for t in teams %}
-<tr>
-    <td>{{ t[0] }}</td>
-    <td>{{ t[1] }}</td>
-    <td>{{ t[2] }}</td>
-    <td>{{ t[3] }}</td>
-    <td><a href="{{ url_for('admin_druzyna_delete', team_id=t[0]) }}">Usuń</a></td>
-</tr>
-{% else %}
-<tr><td colspan="5">Brak drużyn.</td></tr>
-{% endfor %}
-</table>
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nazwa</th>
+                    <th>Miasto</th>
+                    <th>Punkty</th>
+                    <th>Akcje</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in teams %}
+                <tr>
+                    <td>{{ t[0] }}</td>
+                    <td>{{ t[1] }}</td>
+                    <td>{{ t[2] }}</td>
+                    <td>{{ t[3] }}</td>
+                    <td>
+                        <a href="{{ url_for('admin_druzyna_edit', team_id=t[0]) }}" class="btn" style="background:#f39c12;">
+                            Edytuj
+                        </a>
+                        <a href="{{ url_for('admin_druzyna_delete', team_id=t[0]) }}" class="btn" style="background:#e53935;">
+                            Usuń
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5">Brak drużyn.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<footer>© 2026 System Liga – Panel drużyn</footer>
+
 </body>
 </html>

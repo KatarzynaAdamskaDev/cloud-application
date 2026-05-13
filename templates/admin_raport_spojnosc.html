@@ -3,46 +3,54 @@
 <head>
 <meta charset="UTF-8">
 <title>Raport spójności wyników</title>
-<style>
-    body { font-family: Arial; background:#f4f4f4; margin:0; }
-    nav { background:#0078D4; padding:10px 20px; color:white; }
-    nav a { color:white; margin-right:15px; text-decoration:none; }
-    table { width: 90%; margin: 20px auto; border-collapse: collapse; background: white; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align:center; }
-    tr:nth-child(even) { background-color: #f9f9f9; }
-    .ok { background:#e8f5e9; }
-    .bad { background:#ffebee; }
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
+
 <nav>
-    <a href="{{ url_for('index') }}">Strona główna</a>
-    <a href="{{ url_for('admin_panel') }}">Panel admina</a>
+    <div>
+        <a href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Strona główna</a>
+        <a href="{{ url_for('admin_panel') }}"><i class="fa-solid fa-user-gear"></i> Panel admina</a>
+    </div>
 </nav>
 
-<h2 style="text-align:center;">Raport spójności wyników (RB5)</h2>
+<div class="container">
+    <h2 style="text-align:center; color:var(--primary-dark);">
+        <i class="fa-solid fa-scale-balanced"></i> Raport spójności wyników (RB5)
+    </h2>
 
-<table>
-    <tr>
-        <th>Mecz</th>
-        <th>Data</th>
-        <th>Gospodarz</th>
-        <th>Gość</th>
-        <th>Wynik</th>
-        <th>Liczba goli (Gol)</th>
-        <th>Spójność</th>
-    </tr>
-    {% for r in raport %}
-    <tr class="{{ 'ok' if r[7] else 'bad' }}">
-        <td>{{ r[0] }}</td>
-        <td>{{ r[1] }}</td>
-        <td>{{ r[2] }}</td>
-        <td>{{ r[3] }}</td>
-        <td>{{ r[4] }} : {{ r[5] }}</td>
-        <td>{{ r[6] }}</td>
-        <td>{{ 'OK' if r[7] else 'NIESPÓJNE' }}</td>
-    </tr>
-    {% endfor %}
-</table>
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Mecz</th>
+                    <th>Data</th>
+                    <th>Gospodarz</th>
+                    <th>Gość</th>
+                    <th>Wynik</th>
+                    <th>Liczba goli (Gol)</th>
+                    <th>Spójność</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in raport %}
+                <tr class="{{ 'ok' if r[7] else 'bad' }}">
+                    <td>{{ r[0] }}</td>
+                    <td>{{ r[1] }}</td>
+                    <td>{{ r[2] }}</td>
+                    <td>{{ r[3] }}</td>
+                    <td>{{ r[4] }} : {{ r[5] }}</td>
+                    <td>{{ r[6] }}</td>
+                    <td>{{ 'OK' if r[7] else 'NIESPÓJNE' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<footer>© 2026 System Liga – Raport spójności</footer>
+
 </body>
 </html>

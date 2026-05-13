@@ -2,71 +2,95 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<title>Admin - Gole</title>
-<style>
- body { font-family:sans-serif; background:#f4f4f4; margin:0; }
- nav { background:#0078D4; color:white; padding:10px 20px; }
- nav a { color:white; margin-right:15px; text-decoration:none; }
- table { width:95%; margin:20px auto; border-collapse:collapse; background:white; }
- th, td { border:1px solid #ddd; padding:8px; text-align:center; }
- tr:nth-child(even){background:#f9f9f9;}
- form { margin:20px auto; width:95%; background:white; padding:15px; border-radius:8px; }
- input, select { padding:5px; margin:5px; }
- button { padding:6px 12px; }
-</style>
+<title>Admin – Gole</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
+
 <nav>
-    <a href="{{ url_for('index') }}">Strona główna</a>
-    <a href="{{ url_for('admin_panel') }}">Użytkownicy</a>
-    <a href="{{ url_for('admin_druzyny') }}">Drużyny</a>
-    <a href="{{ url_for('admin_zawodnicy') }}">Zawodnicy</a>
-    <a href="{{ url_for('admin_mecze') }}">Mecze</a>
-    <a href="{{ url_for('admin_gole') }}">Gole</a>
-    <a href="{{ url_for('logout') }}">Wyloguj</a>
+    <div>
+        <a href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Strona główna</a>
+        <a href="{{ url_for('admin_panel') }}"><i class="fa-solid fa-user-gear"></i> Użytkownicy</a>
+        <a href="{{ url_for('admin_druzyny') }}"><i class="fa-solid fa-people-group"></i> Drużyny</a>
+        <a href="{{ url_for('admin_zawodnicy') }}"><i class="fa-solid fa-person-running"></i> Zawodnicy</a>
+        <a href="{{ url_for('admin_mecze') }}"><i class="fa-solid fa-futbol"></i> Mecze</a>
+        <a href="{{ url_for('admin_gole') }}"><i class="fa-solid fa-bullseye"></i> Gole</a>
+    </div>
+    <div>
+        <a href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Wyloguj</a>
+    </div>
 </nav>
 
-<h2 style="text-align:center;">Zarządzanie golami</h2>
+<div class="container">
+    <h2 style="text-align:center; color:var(--primary-dark);">
+        Zarządzanie golami
+    </h2>
 
-<form method="POST">
-    <b>Dodaj gola:</b><br>
-    Mecz:
-    <select name="mecz_id" required>
-        {% for m in matches %}
-        <option value="{{ m[0] }}">{{ m[0] }} - {{ m[2] }} vs {{ m[3] }} ({{ m[1] }})</option>
-        {% endfor %}
-    </select>
-    Zawodnik:
-    <select name="zawodnik_id" required>
-        {% for p in players %}
-        <option value="{{ p[0] }}">{{ p[1] }} {{ p[2] }} ({{ p[3] }})</option>
-        {% endfor %}
-    </select>
-    Minuta: <input type="number" name="minuta" required>
-    Typ: <input type="text" name="typ" value="normalny">
-    <button type="submit">Dodaj</button>
-</form>
+    <div class="card">
+        <form method="POST">
+            <b>Dodaj gola:</b><br><br>
+            Mecz:
+            <select name="mecz_id" required>
+                {% for m in matches %}
+                <option value="{{ m[0] }}">{{ m[0] }} - {{ m[2] }} vs {{ m[3] }} ({{ m[1] }})</option>
+                {% endfor %}
+            </select>
+            Zawodnik:
+            <select name="zawodnik_id" required>
+                {% for p in players %}
+                <option value="{{ p[0] }}">{{ p[1] }} {{ p[2] }} ({{ p[3] }})</option>
+                {% endfor %}
+            </select>
+            Minuta:
+            <input type="number" name="minuta" required>
+            Typ:
+            <input type="text" name="typ" value="normalny">
+            <button type="submit"><i class="fa-solid fa-plus"></i> Dodaj</button>
+        </form>
+    </div>
 
-<table>
-<tr>
-    <th>ID</th><th>Mecz</th><th>Data</th><th>Gospodarz</th><th>Gość</th>
-    <th>Zawodnik</th><th>Minuta</th><th>Typ</th><th>Akcje</th>
-</tr>
-{% for g in goals %}
-<tr>
-    <td>{{ g[0] }}</td>
-    <td>{{ g[1] }}</td>
-    <td>{{ g[2] }}</td>
-    <td>{{ g[3] }}</td>
-    <td>{{ g[4] }}</td>
-    <td>{{ g[5] }} {{ g[6] }}</td>
-    <td>{{ g[7] }}</td>
-    <td>{{ g[8] }}</td>
-    <td><a href="{{ url_for('admin_gol_delete', gol_id=g[0]) }}">Usuń</a></td>
-</tr>
-{% else %}
-<tr><td colspan="9">Brak goli.</td></tr>
-{% endfor %}
-</table>
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Mecz</th>
+                    <th>Data</th>
+                    <th>Gospodarz</th>
+                    <th>Gość</th>
+                    <th>Zawodnik</th>
+                    <th>Minuta</th>
+                    <th>Typ</th>
+                    <th>Akcje</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for g in goals %}
+                <tr>
+                    <td>{{ g[0] }}</td>
+                    <td>{{ g[1] }}</td>
+                    <td>{{ g[2] }}</td>
+                    <td>{{ g[3] }}</td>
+                    <td>{{ g[4] }}</td>
+                    <td>{{ g[5] }} {{ g[6] }}</td>
+                    <td>{{ g[7] }}</td>
+                    <td>{{ g[8] }}</td>
+                    <td>
+                        <a href="{{ url_for('admin_gol_delete', gol_id=g[0]) }}" class="btn" style="background:#e53935;">
+                            Usuń
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="9">Brak goli.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<footer>© 2026 System Liga – Panel goli</footer>
+
 </body>
 </html>

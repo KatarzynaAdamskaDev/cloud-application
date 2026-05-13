@@ -3,31 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <title>Edytuj drużynę</title>
-<style>
- body { font-family:sans-serif; background:#f4f4f4; margin:0; }
- nav { background:#0078D4; color:white; padding:10px 20px; }
- nav a { color:white; margin-right:15px; text-decoration:none; }
- .box { max-width:500px; margin:30px auto; background:white; padding:20px; border-radius:8px; }
- input { width:100%; padding:8px; margin:5px 0; }
- button { padding:8px 16px; }
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
+
 <nav>
-    <a href="{{ url_for('admin_druzyny') }}">Powrót</a>
+    <div>
+        <a href="{{ url_for('admin_druzyny') }}"><i class="fa-solid fa-arrow-left"></i> Powrót</a>
+    </div>
 </nav>
 
-<div class="box">
-    <h2>Edytuj drużynę</h2>
-    <form method="POST">
-        Nazwa:
-        <input type="text" name="nazwa" value="{{ team[1] }}" required>
-        Miasto:
-        <input type="text" name="miasto" value="{{ team[2] }}" required>
-        Punkty:
-        <input type="number" name="punkty" value="{{ team[3] }}" required>
-        <button type="submit">Zapisz</button>
-    </form>
+<div class="container">
+    <div class="card" style="max-width:500px; margin:auto;">
+        <h2><i class="fa-solid fa-pen-to-square"></i> Edytuj drużynę</h2>
+        <form method="POST">
+            Nazwa:
+            <input type="text" name="nazwa" value="{{ team[1] }}" required>
+            Miasto:
+            <input type="text" name="miasto" value="{{ team[2] }}" required>
+            Punkty:
+            <input type="number" name="punkty" value="{{ team[3] }}" required>
+            <button type="submit">Zapisz</button>
+        </form>
+    </div>
 </div>
+
+<footer>© 2026 System Liga – Edycja drużyny</footer>
+
 </body>
 </html>

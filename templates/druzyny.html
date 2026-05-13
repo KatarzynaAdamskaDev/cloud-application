@@ -3,33 +3,55 @@
 <head>
 <meta charset="UTF-8">
 <title>Drużyny</title>
-<style>
- body { font-family: sans-serif; background:#f4f4f4; margin:0; }
- nav { background:#0078D4; color:white; padding:10px 20px; }
- nav a { color:white; margin-right:15px; text-decoration:none; }
- table { width:80%; margin:20px auto; border-collapse:collapse; background:white; }
- th, td { border:1px solid #ddd; padding:10px; text-align:center; }
- tr:nth-child(even){background:#f9f9f9;}
-</style>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 </head>
 <body>
+
 <nav>
-    <a href="{{ url_for('index') }}">Strona główna</a>
-    <a href="{{ url_for('zawodnicy_list') }}">Zawodnicy</a>
-    <a href="{{ url_for('mecze_list') }}">Mecze</a>
+    <div>
+        <a href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Strona główna</a>
+        <a href="{{ url_for('zawodnicy_list') }}"><i class="fa-solid fa-person-running"></i> Zawodnicy</a>
+        <a href="{{ url_for('mecze_list') }}"><i class="fa-solid fa-futbol"></i> Mecze</a>
+    </div>
 </nav>
 
-<h2 style="text-align:center;">Lista drużyn</h2>
-<table>
-<tr><th>Nazwa</th><th>Miasto</th><th>Punkty</th><th>Szczegóły</th></tr>
-{% for t in teams %}
-<tr>
-    <td>{{ t[1] }}</td>
-    <td>{{ t[2] }}</td>
-    <td>{{ t[3] }}</td>
-    <td><a href="{{ url_for('druzyna_detail', team_id=t[0]) }}">Pokaż zespół</a></td>
-</tr>
-{% endfor %}
-</table>
+<div class="container">
+    <h2 style="text-align:center; color:var(--primary-dark);">
+        <i class="fa-solid fa-people-group"></i> Lista drużyn
+    </h2>
+
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nazwa</th>
+                    <th>Miasto</th>
+                    <th>Punkty</th>
+                    <th>Szczegóły</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in teams %}
+                <tr>
+                    <td>{{ t[1] }}</td>
+                    <td>{{ t[2] }}</td>
+                    <td><b>{{ t[3] }}</b></td>
+                    <td>
+                        <a class="btn" href="{{ url_for('druzyna_detail', team_id=t[0]) }}">
+                            <i class="fa-solid fa-circle-info"></i> Pokaż
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<footer>© 2026 System Liga</footer>
+
 </body>
 </html>

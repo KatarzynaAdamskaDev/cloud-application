@@ -3,47 +3,102 @@
 <head>
 <meta charset="UTF-8">
 <title>Terminarz rozgrywek</title>
-<style>
-    body { font-family: Arial; background:#f4f4f4; margin:0; }
-    nav { background:#0078D4; padding:10px 20px; color:white; }
-    nav a { color:white; margin-right:15px; text-decoration:none; }
-    .box { background:white; max-width:900px; margin:20px auto; padding:20px; border-radius:8px; }
-    table { width:100%; border-collapse: collapse; margin-top:15px; }
-    th, td { border:1px solid #ddd; padding:8px; text-align:center; }
-</style>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 </head>
 <body>
+
+<!-- NAVBAR -->
 <nav>
-    <a href="{{ url_for('index') }}">Strona główna</a>
-    <a href="{{ url_for('mecze_list') }}">Mecze</a>
+    <div>
+        <a href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Strona główna</a>
+        <a href="{{ url_for('mecze_list') }}"><i class="fa-solid fa-futbol"></i> Mecze</a>
+    </div>
 </nav>
 
-<div class="box">
-    <h2>Terminarz rozgrywek</h2>
-    {% if sezon %}
-        <p>Sezon: <b>{{ sezon[1] }}</b></p>
-        <p>Od: {{ sezon[2] }} do: {{ sezon[3] }} | Status: {{ sezon[4] }}</p>
-    {% else %}
-        <p>Brak zdefiniowanego terminarza.</p>
-    {% endif %}
+<!-- HEADER IMAGE -->
+<img src="{{ url_for('static', filename='img/calendar.jpg') }}"
+     style="width:100%; max-height:260px; object-fit:cover; box-shadow:0 4px 12px rgba(0,0,0,0.2);">
 
-    <h3>Mecze</h3>
-    <table>
-        <tr>
-            <th>Data</th>
-            <th>Gospodarz</th>
-            <th>Gość</th>
-            <th>Wynik</th>
-        </tr>
-        {% for m in mecze %}
-        <tr>
-            <td>{{ m[0] }}</td>
-            <td>{{ m[1] }}</td>
-            <td>{{ m[2] }}</td>
-            <td>{{ m[3] if m[3] is not none else '?' }} : {{ m[4] if m[4] is not none else '?' }}</td>
-        </tr>
-        {% endfor %}
-    </table>
+<div class="container">
+
+    <div class="card">
+        <h2><i class="fa-solid fa-calendar-days"></i> Terminarz rozgrywek</h2>
+
+        {% if sezon %}
+            <p><b>Sezon:</b> {{ sezon[1] }}</p>
+            <p><b>Od:</b> {{ sezon[2] }} &nbsp; <b>Do:</b> {{ sezon[3] }} &nbsp; | &nbsp; <b>Status:</b> {{ sezon[4] }}</p>
+        {% else %}
+            <p>Brak zdefiniowanego terminarza.</p>
+        {% endif %}
+    </div>
+
+    <!-- FILTRY -->
+    <div class="card">
+        <h3><i class="fa-solid fa-filter"></i> Filtry</h3>
+
+        <form method="GET" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:20px;">
+
+            <div>
+                <label><b>Filtr po drużynie:</b></label>
+                <select name="team">
+                    <option value="">Wszystkie</option>
+                    {% for t in teams %}
+                        <option value="{{ t[1] }}">{{ t[1] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label><b>Od daty:</b></label>
+                <input type="date" name="from">
+            </div>
+
+            <div>
+                <label><b>Do daty:</b></label>
+                <input type="date" name="to">
+            </div>
+
+            <div style="display:flex; align-items:end;">
+                <button type="submit"><i class="fa-solid fa-magnifying-glass"></i> Filtruj</button>
+            </div>
+
+        </form>
+    </div>
+
+    <!-- LISTA MECZÓW -->
+    <div class="card">
+        <h3><i class="fa-solid fa-list"></i> Mecze</h3>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Gospodarz</th>
+                    <th>Gość</th>
+                    <th>Wynik</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in mecze %}
+                <tr>
+                    <td>{{ m[0] }}</td>
+                    <td>{{ m[1] }}</td>
+                    <td>{{ m[2] }}</td>
+                    <td><b>{{ m[3] if m[3] is not none else '?' }} : {{ m[4] if m[4] is not none else '?' }}</b></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4">Brak meczów spełniających kryteria.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
 </div>
+
+<footer>© 2026 System Liga – Terminarz</footer>
+
 </body>
 </html>

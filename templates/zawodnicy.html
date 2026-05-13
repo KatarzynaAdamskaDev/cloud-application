@@ -3,34 +3,57 @@
 <head>
 <meta charset="UTF-8">
 <title>Zawodnicy</title>
-<style>
- body { font-family:sans-serif; background:#f4f4f4; margin:0; }
- nav { background:#0078D4; color:white; padding:10px 20px; }
- nav a { color:white; margin-right:15px; text-decoration:none; }
- table { width:90%; margin:20px auto; border-collapse:collapse; background:white; }
- th, td { border:1px solid #ddd; padding:8px; text-align:center; }
- tr:nth-child(even){background:#f9f9f9;}
-</style>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 </head>
 <body>
+
 <nav>
-    <a href="{{ url_for('index') }}">Strona główna</a>
-    <a href="{{ url_for('druzyny_list') }}">Drużyny</a>
-    <a href="{{ url_for('mecze_list') }}">Mecze</a>
+    <div>
+        <a href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Strona główna</a>
+        <a href="{{ url_for('druzyny_list') }}"><i class="fa-solid fa-people-group"></i> Drużyny</a>
+        <a href="{{ url_for('mecze_list') }}"><i class="fa-solid fa-futbol"></i> Mecze</a>
+    </div>
 </nav>
 
-<h2 style="text-align:center;">Lista zawodników</h2>
-<table>
-<tr><th>Imię</th><th>Nazwisko</th><th>Pozycja</th><th>Drużyna</th><th>Szczegóły</th></tr>
-{% for p in players %}
-<tr>
-    <td>{{ p[1] }}</td>
-    <td>{{ p[2] }}</td>
-    <td>{{ p[3] }}</td>
-    <td>{{ p[4] }}</td>
-    <td><a href="{{ url_for('zawodnik_detail', player_id=p[0]) }}">Profil</a></td>
-</tr>
-{% endfor %}
-</table>
+<div class="container">
+    <h2 style="text-align:center; color:var(--primary-dark);">
+        <i class="fa-solid fa-person-running"></i> Lista zawodników
+    </h2>
+
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Imię</th>
+                    <th>Nazwisko</th>
+                    <th>Pozycja</th>
+                    <th>Drużyna</th>
+                    <th>Profil</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in players %}
+                <tr>
+                    <td>{{ p[1] }}</td>
+                    <td>{{ p[2] }}</td>
+                    <td>{{ p[3] }}</td>
+                    <td>{{ p[4] }}</td>
+                    <td>
+                        <a class="btn" href="{{ url_for('zawodnik_detail', player_id=p[0]) }}">
+                            <i class="fa-solid fa-circle-user"></i> Profil
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<footer>© 2026 System Liga</footer>
+
 </body>
 </html>

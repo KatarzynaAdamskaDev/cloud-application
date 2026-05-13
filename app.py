@@ -476,6 +476,30 @@ def trener_historia(team_id):
 
     return render_template("trener_historia.html", team=team, mecze=mecze)
 
+@app.route("/api/lost_goals/<int:team_id>")
+def lost_goals(team_id):
+    conn = get_db_conn()
+    labels = []
+    values = []
+
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT 
+            d2.Nazwa,
+            COUNT(g.GolID)
+        FROM Gol g
+        JOIN Mecz m ON g.MeczID = m.MeczID
+        JOIN Druzyna d1 ON m.DruzynaGospodarzID = d1.DruzynaID
+        JOIN Druzyna d2 ON m.DruzynaGoscID = d2.DruzynaID
+        WHERE m.DruzynaGospodarzID = ? OR m.DruzynaGoscID = ?
+        GROUP BY d2.Nazwa
+    """, (team_id, team_id))
+
+    for row in cursor.fetchall():
+        labels.append(row[0])
+        values.append(row[1])
+
+    return {"labels": labels, "values": values}
 
 
 # ---------- PANEL ADMINA: ROLE ----------
@@ -1086,39 +1110,64 @@ def tabela_ligowa():
 @app.route("/terminarz")
 def terminarz():
     conn = get_db_conn()
-    sezon = None
-    mecze = []
-    if not conn:
-        flash("Brak połączenia z bazą danych.", "danger")
-        return render_template("terminarz.html", sezon=sezon, mecze=mecze)
+    cursor = conn.cursor()
 
-    try:
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT TOP 1 TerminarzID, NazwaSezonu, DataRozpoczecia, DataZakonczenia, Status
-            FROM TerminarzRozgrywek
-            ORDER BY DataRozpoczecia DESC
-        """)
-        sezon = cursor.fetchone()
+    # Pobranie sezonu (zakładam, że masz tylko jeden aktywny)
+    cursor.execute("SELECT * FROM TerminarzRozgrywek ORDER BY SezonID DESC")
+    sezon = cursor.fetchone()
 
-        cursor.execute("""
-            SELECT 
-                m.DataMeczu,
-                d1.Nazwa,
-                d2.Nazwa,
-                m.WynikGospodarz,
-                m.WynikGosc
-            FROM Mecz m
-            JOIN Druzyna d1 ON m.DruzynaGospodarzID = d1.DruzynaID
-            JOIN Druzyna d2 ON m.DruzynaGoscID = d2.DruzynaID
-            ORDER BY m.DataMeczu
-        """)
-        mecze = cursor.fetchall()
-    finally:
-        conn.close()
+    # Pobranie filtrów GET
+    team = request.args.get("team", "")
+    date_from = request.args.get("from", "")
+    date_to = request.args.get("to", "")
 
-    return render_template("terminarz.html", sezon=sezon, mecze=mecze)
+    # Pobranie listy drużyn do filtra
+    cursor.execute("SELECT DruzynaID, Nazwa FROM Druzyna ORDER BY Nazwa")
+    teams = cursor.fetchall()
 
+    # Budowanie zapytania SQL
+    query = """
+        SELECT 
+            m.DataMeczu,
+            d1.Nazwa AS Gospodarz,
+            d2.Nazwa AS Gosc,
+            m.WynikGospodarz,
+            m.WynikGosc
+        FROM Mecz m
+        JOIN Druzyna d1 ON m.DruzynaGospodarzID = d1.DruzynaID
+        JOIN Druzyna d2 ON m.DruzynaGoscID = d2.DruzynaID
+        WHERE 1=1
+    """
+
+    params = []
+
+    # Filtr po drużynie
+    if team:
+        query += " AND (d1.Nazwa = ? OR d2.Nazwa = ?)"
+        params.extend([team, team])
+
+    # Filtr po dacie od
+    if date_from:
+        query += " AND m.DataMeczu >= ?"
+        params.append(date_from)
+
+    # Filtr po dacie do
+    if date_to:
+        query += " AND m.DataMeczu <= ?"
+        params.append(date_to)
+
+    # Sortowanie
+    query += " ORDER BY m.DataMeczu ASC"
+
+    cursor.execute(query, params)
+    mecze = cursor.fetchall()
+
+    return render_template(
+        "terminarz.html",
+        sezon=sezon,
+        mecze=mecze,
+        teams=teams
+    )
 
 if __name__ == "__main__":
     app.run(debug=True)
