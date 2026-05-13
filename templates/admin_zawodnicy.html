@@ -43,7 +43,10 @@
 </form>
 
 <table>
-<tr><th>ID</th><th>Imię</th><th>Nazwisko</th><th>Pozycja</th><th>Drużyna</th><th>Akcje</th></tr>
+<tr><th>ID</th><th>Imię</th><th>Nazwisko</th><th>Pozycja</th><th>Drużyna</th><th><td>
+    <a href="{{ url_for('admin_zawodnik_edit', player_id=p[0]) }}">Edytuj</a> |
+    <a href="{{ url_for('admin_zawodnik_delete', player_id=p[0]) }}">Usuń</a>
+</td></th></tr>
 {% for p in players %}
 <tr>
     <td>{{ p[0] }}</td>

@@ -650,6 +650,50 @@ def admin_zawodnik_delete(player_id):
 
     return redirect(url_for("admin_zawodnicy"))
 
+def admin_zawodnik_edit(player_id):
+    conn = get_db_conn()
+    if not conn:
+        flash("Brak połączenia z bazą danych.", "danger")
+        return redirect(url_for("admin_zawodnicy"))
+
+    try:
+        cursor = conn.cursor()
+
+        if request.method == "POST":
+            imie = request.form.get("imie")
+            nazwisko = request.form.get("nazwisko")
+            pozycja = request.form.get("pozycja")
+            druzyna_id = request.form.get("druzyna_id")
+
+            cursor.execute("""
+                UPDATE Zawodnik
+                SET Imie = ?, Nazwisko = ?, Pozycja = ?, DruzynaID = ?
+                WHERE ZawodnikID = ?
+            """, (imie, nazwisko, pozycja, int(druzyna_id), player_id))
+            conn.commit()
+            flash("Zaktualizowano zawodnika.", "success")
+            return redirect(url_for("admin_zawodnicy"))
+
+        cursor.execute("""
+            SELECT ZawodnikID, Imie, Nazwisko, Pozycja, DruzynaID
+            FROM Zawodnik
+            WHERE ZawodnikID = ?
+        """, (player_id,))
+        player = cursor.fetchone()
+
+        cursor.execute("SELECT DruzynaID, Nazwa FROM Druzyna ORDER BY Nazwa")
+        teams = cursor.fetchall()
+
+    finally:
+        conn.close()
+
+    if not player:
+        flash("Nie znaleziono zawodnika.", "warning")
+        return redirect(url_for("admin_zawodnicy"))
+
+    return render_template("admin_zawodnik_edit.html", player=player, teams=teams)
+
+
 def aktualizuj_punkty_po_meczu(cursor, gosp_id, gosc_id, wynik_g, wynik_gosc):
     """
     RB1: 3 pkt za zwycięstwo, 1 za remis, 0 za porażkę.
@@ -671,6 +715,46 @@ def aktualizuj_punkty_po_meczu(cursor, gosp_id, gosc_id, wynik_g, wynik_gosc):
         # remis
         cursor.execute("UPDATE Druzyna SET Punkty = Punkty + 1 WHERE DruzynaID = ?", (gosp_id,))
         cursor.execute("UPDATE Druzyna SET Punkty = Punkty + 1 WHERE DruzynaID = ?", (gosc_id,))
+
+def admin_druzyna_edit(team_id):
+    conn = get_db_conn()
+    if not conn:
+        flash("Brak połączenia z bazą danych.", "danger")
+        return redirect(url_for("admin_druzyny"))
+
+    try:
+        cursor = conn.cursor()
+
+        if request.method == "POST":
+            nazwa = request.form.get("nazwa")
+            miasto = request.form.get("miasto")
+            punkty = request.form.get("punkty") or 0
+
+            cursor.execute("""
+                UPDATE Druzyna
+                SET Nazwa = ?, Miasto = ?, Punkty = ?
+                WHERE DruzynaID = ?
+            """, (nazwa, miasto, int(punkty), team_id))
+            conn.commit()
+            flash("Zaktualizowano drużynę.", "success")
+            return redirect(url_for("admin_druzyny"))
+
+        cursor.execute("""
+            SELECT DruzynaID, Nazwa, Miasto, Punkty
+            FROM Druzyna
+            WHERE DruzynaID = ?
+        """, (team_id,))
+        team = cursor.fetchone()
+
+    finally:
+        conn.close()
+
+    if not team:
+        flash("Nie znaleziono drużyny.", "warning")
+        return redirect(url_for("admin_druzyny"))
+
+    return render_template("admin_druzyna_edit.html", team=team)
+
 
 # ---------- PANEL ADMINA: MECZE ----------
 

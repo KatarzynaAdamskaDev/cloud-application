@@ -4,37 +4,30 @@
 <meta charset="UTF-8">
 <title>Tabela ligowa</title>
 <style>
-    body { font-family: Arial; background:#f4f4f4; margin:0; }
-    nav { background:#0078D4; padding:10px 20px; color:white; }
-    nav a { color:white; margin-right:15px; text-decoration:none; }
-    table { width: 80%; margin: 20px auto; border-collapse: collapse; background: white; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align:center; }
-    tr:nth-child(even) { background-color: #f9f9f9; }
+ body { font-family:sans-serif; background:#f4f4f4; margin:0; }
+ nav { background:#0078D4; color:white; padding:10px 20px; }
+ nav a { color:white; margin-right:15px; text-decoration:none; }
+ table { width:80%; margin:20px auto; border-collapse:collapse; background:white; }
+ th, td { border:1px solid #ddd; padding:8px; text-align:center; }
+ tr:nth-child(even){background:#f9f9f9;}
 </style>
 </head>
 <body>
 <nav>
     <a href="{{ url_for('index') }}">Strona główna</a>
-    <a href="{{ url_for('druzyny_list') }}">Drużyny</a>
 </nav>
 
 <h2 style="text-align:center;">Tabela ligowa</h2>
-
 <table>
-    <tr>
-        <th>Pozycja</th>
-        <th>Drużyna</th>
-        <th>Miasto</th>
-        <th>Punkty</th>
-    </tr>
-    {% for r in rows %}
-    <tr>
-        <td>{{ loop.index }}</td>
-        <td><a href="{{ url_for('druzyna_detail', team_id=r[0]) }}">{{ r[1] }}</a></td>
-        <td>{{ r[2] }}</td>
-        <td>{{ r[3] }}</td>
-    </tr>
-    {% endfor %}
+<tr><th>Pozycja</th><th>Drużyna</th><th>Miasto</th><th>Punkty</th></tr>
+{% for r in rows %}
+<tr>
+    <td>{{ loop.index }}</td>
+    <td>{{ r[1] }}</td>
+    <td>{{ r[2] }}</td>
+    <td>{{ r[3] }}</td>
+</tr>
+{% endfor %}
 </table>
 </body>
 </html>
