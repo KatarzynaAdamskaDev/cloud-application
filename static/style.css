@@ -311,3 +311,14 @@ footer {
     color: #666;
     margin-top: 40px;
 }
+
+.card input,
+.card label {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.card {
+    padding: 30px;
+}
+
