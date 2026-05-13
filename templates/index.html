@@ -2,21 +2,20 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>System Liga – Panel Główny</title>
+    <title>System Liga – Strona główna</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
 
-<!-- ========================= NAVBAR ========================= -->
+<!-- NAVBAR -->
 <nav class="nav-main">
     <div class="nav-left">
-        <span class="logo">LIGA PIŁKARSKA</span>
+        <span class="logo">LIGA</span>
     </div>
 
     <div class="nav-right">
-        <a href="{{ url_for('index') }}">Start</a>
+        <a href="{{ url_for('index') }}">Liga</a>
         <a href="{{ url_for('druzyny_list') }}">Drużyny</a>
         <a href="{{ url_for('zawodnicy_list') }}">Zawodnicy</a>
         <a href="{{ url_for('mecze_list') }}">Mecze</a>
@@ -25,10 +24,10 @@
         <a href="{{ url_for('terminarz') }}">Terminarz</a>
 
         {% if not session.get('user_login') %}
-            <a href="{{ url_for('login') }}">Logowanie</a>
+            <a class="nav-highlight" href="{{ url_for('login') }}">Logowanie</a>
         {% endif %}
 
-        {% if session.get('rola') in ['Trener'] %}
+        {% if session.get('rola') == 'Trener' %}
             <a class="nav-highlight" href="{{ url_for('trener_select') }}">Panel trenera</a>
         {% endif %}
 
@@ -43,139 +42,112 @@
 </nav>
 
 
-<div class="container">
-
-    <!-- FLASH MESSAGES -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for cat, msg in messages %}
-                <div class="flash flash-{{cat}}">{{ msg }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
-
-<div class="banner">
-    <video autoplay muted loop class="banner-video">
-        <source src="/static/intro.mp4" type="video/mp4">
-    </video>
+<!-- HERO BANNER -->
+<div class="hero-banner">
+    <div class="hero-overlay">
+        <h1>Witamy w Systemie Liga</h1>
+        <p>Analizy, statystyki, terminarz i pełna kontrola nad rozgrywkami</p>
+    </div>
 </div>
 
-    <!-- ========================= GRID TOP ========================= -->
+
+<div class="container">
+
+    <!-- TOP SECTION: NEXT MATCH + LAST MATCH -->
     <div class="grid-2">
 
-        <!-- Lider -->
+        <!-- NEXT MATCH -->
+        <div class="card">
+            <h3>Następny mecz</h3>
+
+            {% if data.season %}
+                <p><b>Sezon:</b> {{ data.season[0] }}</p>
+                <p><b>Status:</b> {{ data.season[1] }}</p>
+            {% endif %}
+
+            {% if data.matches %}
+                {% set next_match = data.matches[0] %}
+                <div class="match-box">
+                    <p><b>{{ next_match[1] }}</b> vs <b>{{ next_match[2] }}</b></p>
+                    <p>{{ next_match[0] }}</p>
+                </div>
+            {% else %}
+                <p>Brak zaplanowanych meczów.</p>
+            {% endif %}
+        </div>
+
+        <!-- LAST MATCH -->
+        <div class="card">
+            <h3>Ostatni mecz</h3>
+
+            {% if data.matches %}
+                {% set last_match = data.matches[-1] %}
+                <div class="match-box">
+                    <p><b>{{ last_match[1] }}</b> {{ last_match[3] }} : {{ last_match[4] }} <b>{{ last_match[2] }}</b></p>
+                    <p>{{ last_match[0] }}</p>
+                </div>
+            {% else %}
+                <p>Brak rozegranych meczów.</p>
+            {% endif %}
+        </div>
+
+    </div>
+
+
+    <!-- BEST PLAYER + LEADER -->
+    <div class="grid-2" style="margin-top: 25px;">
+
         <div class="card">
             <h3>Lider rozgrywek</h3>
             {% if data.team %}
-                <div class="big-value">{{ data.team[0] }}</div>
+                <p><b>{{ data.team[0] }}</b></p>
                 <p>Punkty: <b>{{ data.team[1] }}</b></p>
             {% else %}
-                <p>Brak danych</p>
+                <p>Brak danych.</p>
             {% endif %}
         </div>
 
-        <!-- Najlepszy zawodnik -->
         <div class="card">
-            <h3>Najskuteczniejszy zawodnik</h3>
+            <h3>Najlepszy zawodnik</h3>
             {% if data.player %}
-                <div class="big-value">{{ data.player.nazwa }}</div>
-                <p>Gole: <b>{{ data.player.gole }}</b> | Asysty: <b>{{ data.player.asysty }}</b></p>
+                <p><b>{{ data.player[0] }} {{ data.player[1] }}</b></p>
+                <p>Gole: <b>{{ data.player[2] }}</b></p>
+                <p>Asysty: <b>{{ data.player[3] }}</b></p>
             {% else %}
-                <p>Brak danych</p>
+                <p>Brak danych.</p>
             {% endif %}
         </div>
 
     </div>
 
-    <!-- ========================= STATUS SEZONU ========================= -->
-    <div class="card">
-        <h3>Status sezonu</h3>
-        {% if data.season %}
-            <p>Sezon: <b>{{ data.season[0] }}</b></p>
-            <p>Status: <b>{{ data.season[1] }}</b></p>
-        {% else %}
-            <p>Brak danych o sezonie.</p>
-        {% endif %}
-    </div>
 
-    <!-- ========================= TABELA MECZÓW ========================= -->
-    <div class="card">
+    <!-- NEWS SECTION (LAST MATCHES) -->
+    <div class="card" style="margin-top: 30px;">
         <h3>Ostatnie mecze</h3>
 
-        <div class="scroll-table">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Data</th>
-                        <th>Gospodarz</th>
-                        <th>Wynik</th>
-                        <th>Gość</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for m in data.matches %}
-                    <tr>
-                        <td>{{ m[0] }}</td>
-                        <td>{{ m[1] }}</td>
-                        <td><b>{{ m[3] if m[3] is not none else '?' }} : {{ m[4] if m[4] is not none else '?' }}</b></td>
-                        <td>{{ m[2] }}</td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="4">Brak zarejestrowanych meczów.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Gospodarz</th>
+                    <th>Wynik</th>
+                    <th>Gość</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in data.matches[:10] %}
+                <tr>
+                    <td>{{ m[0] }}</td>
+                    <td>{{ m[1] }}</td>
+                    <td><b>{{ m[3] }} : {{ m[4] }}</b></td>
+                    <td>{{ m[2] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 
-    <!-- ========================= WYKRES (opcjonalny) ========================= -->
-    <div class="card chart-card">
-    <h3>Wykres – stracone gole (wybierz drużynę)</h3>
-
-    <select id="teamSelect" class="input-select">
-        <option value="" disabled selected>Wybierz drużynę...</option>
-        {% for t in data.teams %}
-            <option value="{{ t[0] }}">{{ t[1] }}</option>
-        {% endfor %}
-    </select>
-
-    <canvas id="lostGoalsChart" height="120"></canvas>
 </div>
-
-<script>
-let chart = null;
-
-document.getElementById("teamSelect").addEventListener("change", function() {
-    const teamId = this.value;
-
-    fetch(`/api/lost_goals/${teamId}`)
-        .then(r => r.json())
-        .then(data => {
-            if (chart) chart.destroy();
-
-            chart = new Chart(document.getElementById("lostGoalsChart"), {
-                type: "bar",
-                data: {
-                    labels: data.labels,
-                    datasets: [{
-                        label: "Stracone gole",
-                        data: data.values,
-                        backgroundColor: "#6a1b9a"
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: { beginAtZero: true }
-                    }
-                }
-            });
-        });
-});
-</script>
-
 
 </body>
 </html>
