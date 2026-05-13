@@ -2,57 +2,43 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Liga – Panel Główny</title>
-
-    <!-- FONT AWESOME -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-    <!-- CHART.JS -->
+    <title>System Liga – Panel Główny</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- GLOBAL PREMIUM CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
 <body>
 
-<!-- ================= NAVBAR ================= -->
-<nav>
-    <span>
-        {% if session.get('user_login') %}
-            <i class="fa-solid fa-user"></i>
-            <b>{{ session.get('user_login') }}</b> ({{ session.get('rola') }})
-        {% else %}
-            <i class="fa-solid fa-user"></i> Gość (dostęp publiczny)
-        {% endif %}
-    </span>
+<!-- ========================= NAVBAR ========================= -->
+<nav class="nav-main">
+    <div class="nav-left">
+        <span class="logo">⚽ LIGA</span>
+    </div>
 
-    <div>
-        <a href="{{ url_for('druzyny_list') }}"><i class="fa-solid fa-people-group"></i> Drużyny</a>
-        <a href="{{ url_for('zawodnicy_list') }}"><i class="fa-solid fa-person-running"></i> Zawodnicy</a>
-        <a href="{{ url_for('mecze_list') }}"><i class="fa-solid fa-futbol"></i> Mecze</a>
-        <a href="{{ url_for('strzelcy') }}"><i class="fa-solid fa-bullseye"></i> Strzelcy</a>
-        <a href="{{ url_for('tabela_ligowa') }}"><i class="fa-solid fa-ranking-star"></i> Tabela</a>
+    <div class="nav-right">
+        <a href="{{ url_for('druzyny_list') }}">Drużyny</a>
+        <a href="{{ url_for('zawodnicy_list') }}">Zawodnicy</a>
+        <a href="{{ url_for('mecze_list') }}">Mecze</a>
+        <a href="{{ url_for('strzelcy') }}">Strzelcy</a>
+        <a href="{{ url_for('tabela_ligowa') }}">Tabela</a>
+        <a href="{{ url_for('terminarz') }}">Terminarz</a>
 
-        {% if session.get('rola') == 'Trener' or session.get('rola') == 'Administrator' %}
-            <a href="{{ url_for('trener_select') }}"><i class="fa-solid fa-chalkboard-user"></i> Panel trenera</a>
+        {% if session.get('rola') in ['Trener', 'Administrator'] %}
+            <a class="nav-highlight" href="{{ url_for('trener_select') }}">Panel trenera</a>
         {% endif %}
 
         {% if session.get('rola') == 'Administrator' %}
-            <a href="{{ url_for('admin_panel') }}"><i class="fa-solid fa-gear"></i> Panel admina</a>
+            <a class="nav-highlight" href="{{ url_for('admin_panel') }}">Admin</a>
         {% endif %}
 
         {% if session.get('user_login') %}
-            <a href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Wyloguj</a>
+            <a href="{{ url_for('logout') }}">Wyloguj</a>
         {% else %}
-            <a href="{{ url_for('login') }}"><i class="fa-solid fa-right-to-bracket"></i> Zaloguj</a>
+            <a href="{{ url_for('login') }}">Logowanie</a>
+            <a href="{{ url_for('register') }}">Rejestracja</a>
         {% endif %}
     </div>
 </nav>
-
-<!-- ================= HEADER IMAGE ================= -->
-<img src="{{ url_for('static', filename='img/stadium.jpg') }}" 
-     style="width:100%; max-height:260px; object-fit:cover; box-shadow:0 4px 12px rgba(0,0,0,0.2);">
 
 <div class="container">
 
@@ -60,73 +46,54 @@
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for cat, msg in messages %}
-                <div class="flash flash-{{cat}}">{{msg}}</div>
+                <div class="flash flash-{{cat}}">{{ msg }}</div>
             {% endfor %}
         {% endif %}
     {% endwith %}
 
-    <!-- ================= TOP CARDS ================= -->
-    <div class="grid" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:20px;">
+    <!-- ========================= GRID TOP ========================= -->
+    <div class="grid-2">
 
-        <!-- Lider rozgrywek -->
+        <!-- Lider -->
         <div class="card">
-            <h3><i class="fa-solid fa-trophy"></i> Lider Rozgrywek</h3>
+            <h3>Lider rozgrywek</h3>
             {% if data.team %}
-                <b>{{ data.team[0] }}</b><br>
-                Punkty: {{ data.team[1] }}
+                <div class="big-value">{{ data.team[0] }}</div>
+                <p>Punkty: <b>{{ data.team[1] }}</b></p>
             {% else %}
-                Brak danych
+                <p>Brak danych</p>
             {% endif %}
         </div>
 
-        <!-- Najskuteczniejszy zawodnik -->
+        <!-- Najlepszy zawodnik -->
         <div class="card">
-            <h3><i class="fa-solid fa-fire"></i> Najskuteczniejszy zawodnik</h3>
+            <h3>Najskuteczniejszy zawodnik</h3>
             {% if data.player %}
-                <b>{{ data.player.nazwa }}</b><br>
-                Gole: {{ data.player.gole }} | Asysty: {{ data.player.asysty }}
+                <div class="big-value">{{ data.player.nazwa }}</div>
+                <p>Gole: <b>{{ data.player.gole }}</b> | Asysty: <b>{{ data.player.asysty }}</b></p>
             {% else %}
-                Brak danych
+                <p>Brak danych</p>
             {% endif %}
         </div>
+
     </div>
 
-    <!-- ================= WYKRES GOLI ================= -->
-   <div class="chart-card">
-    <h3><i class="fa-solid fa-chart-column"></i> Gole drużyn w sezonie</h3>
-    <canvas id="goalsChart"></canvas>
-</div>
-
-<script>
-    fetch("/api/goals_per_team")
-        .then(r => r.json())
-        .then(data => {
-            new Chart(document.getElementById("goalsChart"), {
-                type: "bar",
-                data: {
-                    labels: data.labels,
-                    datasets: [{
-                        label: "Gole",
-                        data: data.values,
-                        backgroundColor: "#9c4dcc"
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: false } }
-                }
-            });
-        });
-</script>
-
-<br>
-
-
-    <!-- ================= TABELA MECZÓW ================= -->
+    <!-- ========================= STATUS SEZONU ========================= -->
     <div class="card">
-        <h3><i class="fa-solid fa-list"></i> Ostatnie mecze</h3>
+        <h3>Status sezonu</h3>
+        {% if data.season %}
+            <p>Sezon: <b>{{ data.season[0] }}</b></p>
+            <p>Status: <b>{{ data.season[1] }}</b></p>
+        {% else %}
+            <p>Brak danych o sezonie.</p>
+        {% endif %}
+    </div>
 
-        <div class="scroll-table" style="max-height:350px; overflow-y:auto;">
+    <!-- ========================= TABELA MECZÓW ========================= -->
+    <div class="card">
+        <h3>Ostatnie mecze</h3>
+
+        <div class="scroll-table">
             <table>
                 <thead>
                     <tr>
@@ -154,11 +121,48 @@
         </div>
     </div>
 
+    <!-- ========================= WYKRES (opcjonalny) ========================= -->
+    <div class="card chart-card">
+        <h3>Wykres – stracone gole (wybierz drużynę)</h3>
+
+        <select id="teamSelect" class="input-select">
+            <option value="" disabled selected>Wybierz drużynę...</option>
+            {% for m in data.matches %}
+                <option value="{{ m[1] }}">{{ m[1] }}</option>
+                <option value="{{ m[2] }}">{{ m[2] }}</option>
+            {% endfor %}
+        </select>
+
+        <canvas id="lostGoalsChart" height="120"></canvas>
+    </div>
+
 </div>
 
-<footer>
-    © 2026 System Liga – Aplikacja SaaS w Azure
-</footer>
+<script>
+let chart = null;
+
+document.getElementById("teamSelect").addEventListener("change", function() {
+    const teamName = this.value;
+
+    fetch(`/api/lost_goals/${teamName}`)
+        .then(r => r.json())
+        .then(data => {
+            if (chart) chart.destroy();
+
+            chart = new Chart(document.getElementById("lostGoalsChart"), {
+                type: "bar",
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: "Stracone gole",
+                        data: data.values,
+                        backgroundColor: "#6a1b9a"
+                    }]
+                }
+            });
+        });
+});
+</script>
 
 </body>
 </html>

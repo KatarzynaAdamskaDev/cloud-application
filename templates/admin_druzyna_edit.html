@@ -1,35 +1,45 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-<meta charset="UTF-8">
-<title>Edytuj drużynę</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <title>Edytuj drużynę – Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
 
-<nav>
-    <div>
-        <a href="{{ url_for('admin_druzyny') }}"><i class="fa-solid fa-arrow-left"></i> Powrót</a>
+<nav class="nav-main">
+    <div class="nav-left">
+        <span class="logo">⚽ LIGA – ADMIN</span>
+    </div>
+
+    <div class="nav-right">
+        <a href="{{ url_for('admin_druzyny') }}">Powrót</a>
+        <a href="{{ url_for('logout') }}">Wyloguj</a>
     </div>
 </nav>
 
 <div class="container">
-    <div class="card" style="max-width:500px; margin:auto;">
-        <h2><i class="fa-solid fa-pen-to-square"></i> Edytuj drużynę</h2>
+
+    <h2>Edytuj drużynę</h2>
+
+    <div class="card">
         <form method="POST">
-            Nazwa:
+
+            <label>Nazwa:</label>
             <input type="text" name="nazwa" value="{{ team[1] }}" required>
-            Miasto:
+
+            <label>Miasto:</label>
             <input type="text" name="miasto" value="{{ team[2] }}" required>
-            Punkty:
+
+            <label>Punkty:</label>
             <input type="number" name="punkty" value="{{ team[3] }}" required>
-            <button type="submit">Zapisz</button>
+
+            <button class="btn" type="submit">Zapisz zmiany</button>
         </form>
     </div>
-</div>
 
-<footer>© 2026 System Liga – Edycja drużyny</footer>
+</div>
 
 </body>
 </html>

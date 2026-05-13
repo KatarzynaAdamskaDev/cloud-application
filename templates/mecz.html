@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Zawodnicy – System Liga</title>
+    <title>Szczegóły meczu – System Liga</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
@@ -16,8 +16,9 @@
 
     <div class="nav-right">
         <a href="{{ url_for('index') }}">Strona główna</a>
+        <a href="{{ url_for('mecze_list') }}">Wszystkie mecze</a>
         <a href="{{ url_for('druzyny_list') }}">Drużyny</a>
-        <a href="{{ url_for('mecze_list') }}">Mecze</a>
+        <a href="{{ url_for('zawodnicy_list') }}">Zawodnicy</a>
         <a href="{{ url_for('strzelcy') }}">Strzelcy</a>
         <a href="{{ url_for('tabela_ligowa') }}">Tabela</a>
         <a href="{{ url_for('terminarz') }}">Terminarz</a>
@@ -41,41 +42,54 @@
 
 <div class="container">
 
-    <h2>Lista zawodników</h2>
+    {% if mecz %}
+    <div class="card">
+        <h2>Mecz #{{ mecz[0] }}</h2>
+
+        <p><b>Data:</b> {{ mecz[1] }}</p>
+
+        <div style="font-size:1.4rem; margin:15px 0;">
+            <b>{{ mecz[2] }}</b>
+            <span style="color:var(--primary-dark); font-weight:700;">
+                {{ mecz[4] }} : {{ mecz[5] }}
+            </span>
+            <b>{{ mecz[3] }}</b>
+        </div>
+    </div>
 
     <div class="card">
+        <h3>Zdarzenia meczowe</h3>
+
         <table>
             <thead>
                 <tr>
-                    <th>Imię</th>
-                    <th>Nazwisko</th>
-                    <th>Pozycja</th>
-                    <th>Drużyna</th>
-                    <th>Profil</th>
+                    <th>Minuta</th>
+                    <th>Typ</th>
+                    <th>Zawodnik</th>
                 </tr>
             </thead>
 
             <tbody>
-                {% for p in players %}
+                {% for g in gole %}
                 <tr>
-                    <td>{{ p[1] }}</td>
-                    <td>{{ p[2] }}</td>
-                    <td>{{ p[3] }}</td>
-                    <td>{{ p[4] }}</td>
-                    <td>
-                        <a class="btn" href="{{ url_for('zawodnik_detail', player_id=p[0]) }}">
-                            Otwórz
-                        </a>
-                    </td>
+                    <td>{{ g[0] }}</td>
+                    <td>{{ g[1] }}</td>
+                    <td>{{ g[2] }} {{ g[3] }}</td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="5">Brak zawodników w systemie.</td>
+                    <td colspan="3">Brak zarejestrowanych zdarzeń.</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+
+    {% else %}
+    <div class="card">
+        <p>Nie znaleziono meczu.</p>
+    </div>
+    {% endif %}
 
 </div>
 

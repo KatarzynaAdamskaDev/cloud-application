@@ -1,27 +1,47 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-<meta charset="UTF-8">
-<title>Drużyny</title>
-
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
+    <meta charset="UTF-8">
+    <title>Drużyny – System Liga</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
 
-<nav>
-    <div>
-        <a href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Strona główna</a>
-        <a href="{{ url_for('zawodnicy_list') }}"><i class="fa-solid fa-person-running"></i> Zawodnicy</a>
-        <a href="{{ url_for('mecze_list') }}"><i class="fa-solid fa-futbol"></i> Mecze</a>
+<!-- NAVBAR -->
+<nav class="nav-main">
+    <div class="nav-left">
+        <span class="logo">⚽ LIGA</span>
+    </div>
+
+    <div class="nav-right">
+        <a href="{{ url_for('index') }}">Strona główna</a>
+        <a href="{{ url_for('zawodnicy_list') }}">Zawodnicy</a>
+        <a href="{{ url_for('mecze_list') }}">Mecze</a>
+        <a href="{{ url_for('strzelcy') }}">Strzelcy</a>
+        <a href="{{ url_for('tabela_ligowa') }}">Tabela</a>
+        <a href="{{ url_for('terminarz') }}">Terminarz</a>
+
+        {% if session.get('rola') in ['Trener', 'Administrator'] %}
+            <a class="nav-highlight" href="{{ url_for('trener_select') }}">Panel trenera</a>
+        {% endif %}
+
+        {% if session.get('rola') == 'Administrator' %}
+            <a class="nav-highlight" href="{{ url_for('admin_panel') }}">Admin</a>
+        {% endif %}
+
+        {% if session.get('user_login') %}
+            <a href="{{ url_for('logout') }}">Wyloguj</a>
+        {% else %}
+            <a href="{{ url_for('login') }}">Logowanie</a>
+            <a href="{{ url_for('register') }}">Rejestracja</a>
+        {% endif %}
     </div>
 </nav>
 
 <div class="container">
-    <h2 style="text-align:center; color:var(--primary-dark);">
-        <i class="fa-solid fa-people-group"></i> Lista drużyn
-    </h2>
+
+    <h2>Lista drużyn</h2>
 
     <div class="card">
         <table>
@@ -33,6 +53,7 @@
                     <th>Szczegóły</th>
                 </tr>
             </thead>
+
             <tbody>
                 {% for t in teams %}
                 <tr>
@@ -41,17 +62,20 @@
                     <td><b>{{ t[3] }}</b></td>
                     <td>
                         <a class="btn" href="{{ url_for('druzyna_detail', team_id=t[0]) }}">
-                            <i class="fa-solid fa-circle-info"></i> Pokaż
+                            Otwórz
                         </a>
                     </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4">Brak drużyn w systemie.</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-</div>
 
-<footer>© 2026 System Liga</footer>
+</div>
 
 </body>
 </html>

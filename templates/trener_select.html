@@ -1,53 +1,63 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-<meta charset="UTF-8">
-<title>Wybór drużyny – Trener</title>
-
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
+    <meta charset="UTF-8">
+    <title>Wybór drużyny – Panel trenera</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
 
-<!-- NAVBAR -->
-<nav>
-    <div>
-        <a href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Strona główna</a>
+<nav class="nav-main">
+    <div class="nav-left">
+        <span class="logo">⚽ LIGA</span>
     </div>
-    <div>
-        <a href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Wyloguj</a>
+
+    <div class="nav-right">
+        <a href="{{ url_for('index') }}">Strona główna</a>
+        <a class="nav-highlight" href="{{ url_for('trener_select') }}">Panel trenera</a>
+
+        {% if session.get('rola') == 'Administrator' %}
+            <a class="nav-highlight" href="{{ url_for('admin_panel') }}">Admin</a>
+        {% endif %}
+
+        <a href="{{ url_for('logout') }}">Wyloguj</a>
     </div>
 </nav>
 
-<!-- HEADER IMAGE -->
-<img src="{{ url_for('static', filename='img/coach_select.jpg') }}"
-     style="width:100%; max-height:240px; object-fit:cover; box-shadow:0 4px 12px rgba(0,0,0,0.2);">
-
 <div class="container">
 
-    <div class="card" style="max-width:500px; margin:auto;">
-        <h2 style="text-align:center;">
-            <i class="fa-solid fa-list-check"></i> Wybierz drużynę do analizy
-        </h2>
+    <h2>Wybierz drużynę do analizy</h2>
 
-        <ul style="list-style:none; padding:0; margin-top:20px;">
-            {% for t in teams %}
-            <li style="margin:10px 0;">
-                <a class="btn" href="{{ url_for('trener_view', team_id=t[0]) }}" 
-                   style="display:block; text-align:center;">
-                    <i class="fa-solid fa-shield-halved"></i> {{ t[1] }}
-                </a>
-            </li>
-            {% else %}
-            <li style="text-align:center; color:#777;">Brak drużyn.</li>
-            {% endfor %}
-        </ul>
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Drużyna</th>
+                    <th>Analiza</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for t in teams %}
+                <tr>
+                    <td>{{ t[1] }}</td>
+                    <td>
+                        <a class="btn" href="{{ url_for('trener_view', team_id=t[0]) }}">
+                            Otwórz raport
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="2">Brak drużyn w systemie.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 
 </div>
-
-<footer>© 2026 System Liga – Wybór drużyny</footer>
 
 </body>
 </html>

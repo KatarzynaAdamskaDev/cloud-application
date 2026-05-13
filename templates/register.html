@@ -1,38 +1,51 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-<meta charset="UTF-8">
-<title>Rejestracja</title>
-
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
+    <meta charset="UTF-8">
+    <title>Rejestracja – System Liga</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
 
-<div class="profile-box" style="max-width:380px;">
+<nav class="nav-main">
+    <div class="nav-left">
+        <span class="logo">⚽ LIGA</span>
+    </div>
 
-    <img src="{{ url_for('static', filename='img/register.jpg') }}" class="profile-img">
+    <div class="nav-right">
+        <a href="{{ url_for('index') }}">Strona główna</a>
+        <a href="{{ url_for('login') }}">Logowanie</a>
+    </div>
+</nav>
 
-    <h2><i class="fa-solid fa-user-plus"></i> Rejestracja</h2>
+<div class="container">
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for cat, msg in messages %}
-                <div class="flash flash-{{cat}}">{{ msg }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+    <div class="profile-box">
+        <h2>Rejestracja</h2>
 
-    <form method="POST">
-        <input type="text" name="login" placeholder="Nowy login" required>
-        <input type="password" name="password" placeholder="Nowe hasło" required>
-        <button type="submit">Zarejestruj się</button>
-    </form>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for cat, msg in messages %}
+                    <div class="flash flash-{{cat}}">{{ msg }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
-    <p style="margin-top:10px;">
-        <a href="{{ url_for('login') }}"><i class="fa-solid fa-right-to-bracket"></i> Wróć do logowania</a>
-    </p>
+        <form method="POST">
+            <label>Login:</label>
+            <input type="text" name="login" required>
+
+            <label>Hasło:</label>
+            <input type="password" name="password" required>
+
+            <button class="btn" type="submit">Utwórz konto</button>
+        </form>
+
+        <p>Masz już konto?  
+            <a href="{{ url_for('login') }}">Zaloguj się</a>
+        </p>
+    </div>
 
 </div>
 

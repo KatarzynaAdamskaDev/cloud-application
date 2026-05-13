@@ -1,124 +1,63 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-<meta charset="UTF-8">
-<title>Analiza Trenera – System Liga</title>
-
-<!-- FONT AWESOME -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-<!-- CHART.JS -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<!-- PREMIUM CSS -->
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <meta charset="UTF-8">
+    <title>Analiza trenera – System Liga</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
 
-<!-- NAVBAR -->
-<nav>
-    <div>
-        <a href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Strona Główna</a>
-        <a href="{{ url_for('trener_select') }}"><i class="fa-solid fa-list-check"></i> Wybierz drużynę</a>
-
-        {% if session.get('rola') == 'Administrator' %}
-            <a href="{{ url_for('admin_panel') }}"><i class="fa-solid fa-gear"></i> Panel Admina</a>
-        {% endif %}
+<nav class="nav-main">
+    <div class="nav-left">
+        <span class="logo">⚽ LIGA</span>
     </div>
 
-    <div>
-        <a href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Wyloguj</a>
+    <div class="nav-right">
+        <a href="{{ url_for('index') }}">Strona główna</a>
+        <a class="nav-highlight" href="{{ url_for('trener_select') }}">Panel trenera</a>
+
+        {% if session.get('rola') == 'Administrator' %}
+            <a class="nav-highlight" href="{{ url_for('admin_panel') }}">Admin</a>
+        {% endif %}
+
+        <a href="{{ url_for('logout') }}">Wyloguj</a>
     </div>
 </nav>
 
-<!-- HEADER IMAGE -->
-<img src="{{ url_for('static', filename='img/coach.jpg') }}"
-     style="width:100%; max-height:260px; object-fit:cover; box-shadow:0 4px 12px rgba(0,0,0,0.2);">
-
-<h1 style="text-align:center; color:var(--primary-dark); margin-top:30px;">
-    <i class="fa-solid fa-chalkboard-user"></i> Raport Skautingowy
-</h1>
-
 <div class="container">
 
-    <!-- KARTA ANALIZY -->
-    <div class="card" style="max-width:600px; margin:auto;">
-        <div class="team-name" style="font-size:1.2rem; margin-bottom:20px;">
-            Analiza dla drużyny:
-            <strong>{{ team[0] if team else 'Nieznana' }}</strong>
-        </div>
+    <h2>Raport skautingowy</h2>
 
-        <h3><i class="fa-solid fa-triangle-exclamation"></i> Największe zagrożenie</h3>
+    <div class="card">
+        <h3>Drużyna analizowana:</h3>
+        <p style="font-size:1.3rem; font-weight:700;">
+            {{ team[0] if team else 'Nieznana' }}
+        </p>
+    </div>
+
+    <div class="card">
+        <h3>Największe zagrożenie</h3>
 
         {% if player %}
-            <div class="danger-zone" style="
-                background:#fff5f5;
-                padding:15px;
-                border-radius:8px;
-                border:1px solid #ffcdd2;
-                margin-bottom:20px;
-            ">
-                <p>Ten zawodnik strzelił Twojej drużynie najwięcej bramek:</p>
-                <div class="player-name" style="font-size:1.8rem; font-weight:bold; color:#d13438;">
-                    {{ player[0] }} {{ player[1] }}
-                </div>
-                <div class="bramki" style="font-size:1.2rem;">
-                    Liczba goli: <strong>{{ player[2] }}</strong>
-                </div>
-            </div>
+            <p>Najwięcej bramek przeciwko tej drużynie zdobył:</p>
 
-            <p style="text-align:center;">
-                <a href="{{ url_for('trener_historia', team_id=request.view_args.get('team_id', 1)) }}"
-                   class="btn" style="background:var(--primary); color:white;">
-                    <i class="fa-solid fa-clock-rotate-left"></i> Historia spotkań
-                </a>
+            <div class="big-value">{{ player[0] }} {{ player[1] }}</div>
+
+            <p style="font-size:1.2rem;">
+                Liczba goli: <b>{{ player[2] }}</b>
             </p>
 
-            <p style="margin-top:20px; font-size:0.9rem; color:#666; text-align:center;">
-                Zalecenie: Zacieśnij krycie tego zawodnika w kolejnym meczu!
-            </p>
+            <a class="btn" href="{{ url_for('trener_historia', team_id=request.view_args.get('team_id')) }}">
+                Historia spotkań tej drużyny
+            </a>
 
         {% else %}
-            <p class="no-data" style="color:#888; font-style:italic;">
-                Twoja drużyna nie straciła jeszcze żadnej bramki. Gratulacje dla defensywy!
-            </p>
+            <p>Ta drużyna nie straciła jeszcze żadnej bramki. Obrona na medal!</p>
         {% endif %}
     </div>
 
-    <!-- WYKRES: Gole stracone przez drużynę -->
-    <div class="chart-card" style="max-width:700px; margin:40px auto;">
-        <h3><i class="fa-solid fa-chart-line"></i> Gole stracone przez drużynę</h3>
-        <canvas id="lostGoalsChart"></canvas>
-    </div>
-
-    <script>
-        fetch("/api/lost_goals/{{ request.view_args.get('team_id', 1) }}")
-            .then(r => r.json())
-            .then(data => {
-                new Chart(document.getElementById("lostGoalsChart"), {
-                    type: "bar",
-                    data: {
-                        labels: data.labels,
-                        datasets: [{
-                            label: "Gole stracone",
-                            data: data.values,
-                            backgroundColor: "#9c4dcc"
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: { legend: { display: false } }
-                    }
-                });
-            });
-    </script>
-
 </div>
-
-<footer>
-    © 2026 System Liga – Moduł analityczny trenera
-</footer>
 
 </body>
 </html>

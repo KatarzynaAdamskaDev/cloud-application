@@ -1,21 +1,31 @@
-/* ===========================
-   MATERIAL DESIGN – PREMIUM UI
-   =========================== */
+/* ============================================
+   PREMIUM UI – SYSTEM LIGA (GLOBAL STYLE)
+   ============================================ */
 
 :root {
-    --primary: #6a1b9a;
-    --primary-light: #9c4dcc;
-    --primary-dark: #4a148c;
-    --accent: #ffca28;
-    --bg: #f3e5f5;
-    --text: #212121;
-    --card-bg: #ffffff;
-    --border: #e0e0e0;
+    --primary: #5a2ea6;
+    --primary-light: #7d4ed1;
+    --primary-dark: #3c1f73;
+
+    --accent: #ffcc33;
+    --accent-dark: #d4a300;
+
+    --bg: #f3f0fa;
+    --bg-light: #ffffff;
+
+    --text: #1e1e1e;
+    --text-light: #555;
+
+    --border: #e0dff2;
+
     --shadow: rgba(0,0,0,0.12);
-    --shadow-strong: rgba(0,0,0,0.24);
+    --shadow-strong: rgba(0,0,0,0.25);
 }
 
-/* GLOBAL */
+/* ============================================
+   GLOBAL
+   ============================================ */
+
 body {
     font-family: 'Segoe UI', sans-serif;
     background: var(--bg);
@@ -23,84 +33,152 @@ body {
     color: var(--text);
 }
 
-/* NAVBAR */
-nav {
+h1, h2, h3 {
+    margin-top: 0;
+    color: var(--primary-dark);
+}
+
+/* ============================================
+   NAVBAR
+   ============================================ */
+
+.nav-main {
     background: var(--primary);
     color: white;
     padding: 15px 30px;
+
     display: flex;
     justify-content: space-between;
     align-items: center;
+
     position: sticky;
     top: 0;
     z-index: 1000;
-    box-shadow: 0 4px 10px var(--shadow);
+
+    box-shadow: 0 4px 12px var(--shadow);
 }
 
-nav a {
+.nav-main .logo {
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.nav-main a {
     color: white;
-    margin-right: 20px;
+    margin-left: 18px;
     text-decoration: none;
     font-weight: 600;
+    transition: 0.2s;
 }
 
-nav a:hover {
+.nav-main a:hover {
     color: var(--accent);
 }
 
-/* CONTAINER */
+.nav-highlight {
+    background: var(--accent);
+    color: black !important;
+    padding: 6px 12px;
+    border-radius: 6px;
+}
+
+.nav-highlight:hover {
+    background: var(--accent-dark);
+}
+
+/* ============================================
+   CONTAINER
+   ============================================ */
+
 .container {
-    padding: 20px;
     max-width: 1200px;
     margin: auto;
-}
-
-/* CARDS */
-.card {
-    background: var(--card-bg);
     padding: 25px;
-    border-radius: 12px;
+}
+
+/* ============================================
+   GRID
+   ============================================ */
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+/* ============================================
+   CARDS
+   ============================================ */
+
+.card {
+    background: var(--bg-light);
+    padding: 25px;
+    border-radius: 14px;
     box-shadow: 0 4px 12px var(--shadow);
-    margin-bottom: 20px;
+    margin-bottom: 25px;
+    transition: 0.2s;
 }
 
-.card h3 {
-    color: var(--primary-dark);
-    margin-top: 0;
+.card:hover {
+    box-shadow: 0 6px 18px var(--shadow-strong);
 }
 
-/* TABLES */
+.big-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 10px;
+}
+
+/* ============================================
+   TABLES
+   ============================================ */
+
+.scroll-table {
+    max-height: 350px;
+    overflow-y: auto;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
     background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px var(--shadow);
 }
 
-th {
+thead {
     background: var(--primary);
     color: white;
-    padding: 12px;
-    font-weight: 600;
+    position: sticky;
+    top: 0;
 }
 
-td {
+th, td {
     padding: 12px;
     border-bottom: 1px solid var(--border);
+    text-align: center;
 }
 
 tr:nth-child(even) {
-    background: #f8f3fc;
+    background: #f7f3ff;
 }
+
+tr:hover {
+    background: #ece4ff;
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
 
 .btn {
     display: inline-block;
     background: var(--primary);
     color: white;
-    padding: 8px 14px;
-    border-radius: 6px;
+    padding: 10px 16px;
+    border-radius: 8px;
     text-decoration: none;
     font-weight: 600;
     transition: 0.2s;
@@ -110,58 +188,67 @@ tr:nth-child(even) {
     background: var(--primary-dark);
 }
 
-.btn.danger {
-    background: #e53935;
+.btn-danger {
+    background: #d62828;
 }
 
-.btn.danger:hover {
-    background: #c62828;
+.btn-danger:hover {
+    background: #a61f1f;
 }
 
-.btn.warning {
-    background: #f39c12;
+.btn-warning {
+    background: #f4a100;
 }
 
-.btn.warning:hover {
-    background: #d68910;
+.btn-warning:hover {
+    background: #c98500;
 }
 
+/* ============================================
+   FORMS
+   ============================================ */
 
-/* FORMS */
 input, select {
     width: 100%;
     padding: 12px;
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: 8px;
     margin-bottom: 15px;
     font-size: 1rem;
+    transition: 0.2s;
 }
 
 input:focus, select:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 5px var(--primary-light);
+    box-shadow: 0 0 6px var(--primary-light);
 }
 
-/* FLASH MESSAGES */
+/* ============================================
+   FLASH MESSAGES
+   ============================================ */
+
 .flash {
     padding: 12px;
-    border-radius: 6px;
+    border-radius: 8px;
     margin-bottom: 20px;
     color: white;
     font-weight: 600;
 }
 
-.flash-success { background: #43a047; }
-.flash-danger { background: #e53935; }
+.flash-success { background: #2e8b57; }
+.flash-danger { background: #d62828; }
 .flash-info { background: var(--primary); }
-.flash-warning { background: #fbc02d; }
+.flash-warning { background: #f4a100; }
 
-/* PROFILE BOX */
+/* ============================================
+   PROFILE BOX
+   ============================================ */
+
 .profile-box {
     background: white;
     padding: 30px;
-    border-radius: 12px;
+    border-radius: 14px;
     box-shadow: 0 4px 12px var(--shadow);
     max-width: 600px;
     margin: 40px auto;
@@ -177,16 +264,21 @@ input:focus, select:focus {
     border: 4px solid var(--primary-light);
 }
 
-/* CHARTS */
+/* ============================================
+   CHART CARD
+   ============================================ */
+
 .chart-card {
     padding: 20px;
-    border-radius: 12px;
+    border-radius: 14px;
     background: white;
     box-shadow: 0 4px 12px var(--shadow);
-    margin-top: 20px;
 }
 
-/* FOOTER */
+/* ============================================
+   FOOTER
+   ============================================ */
+
 footer {
     text-align: center;
     padding: 20px;

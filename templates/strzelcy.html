@@ -1,26 +1,46 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-<meta charset="UTF-8">
-<title>Klasyfikacja strzelców</title>
-
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
+    <meta charset="UTF-8">
+    <title>Klasyfikacja strzelców – System Liga</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
 
-<nav>
-    <div>
-        <a href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Strona główna</a>
-        <a href="{{ url_for('zawodnicy_list') }}"><i class="fa-solid fa-person-running"></i> Zawodnicy</a>
+<!-- NAVBAR -->
+<nav class="nav-main">
+    <div class="nav-left">
+        <span class="logo">⚽ LIGA</span>
+    </div>
+
+    <div class="nav-right">
+        <a href="{{ url_for('index') }}">Strona główna</a>
+        <a href="{{ url_for('druzyny_list') }}">Drużyny</a>
+        <a href="{{ url_for('zawodnicy_list') }}">Zawodnicy</a>
+        <a href="{{ url_for('mecze_list') }}">Mecze</a>
+        <a class="nav-highlight" href="{{ url_for('strzelcy') }}">Strzelcy</a>
+        <a href="{{ url_for('tabela_ligowa') }}">Tabela</a>
+        <a href="{{ url_for('terminarz') }}">Terminarz</a>
+
+        {% if session.get('rola') in ['Trener', 'Administrator'] %}
+            <a class="nav-highlight" href="{{ url_for('trener_select') }}">Panel trenera</a>
+        {% endif %}
+        {% if session.get('rola') == 'Administrator' %}
+            <a class="nav-highlight" href="{{ url_for('admin_panel') }}">Admin</a>
+        {% endif %}
+        {% if session.get('user_login') %}
+            <a href="{{ url_for('logout') }}">Wyloguj</a>
+        {% else %}
+            <a href="{{ url_for('login') }}">Logowanie</a>
+            <a href="{{ url_for('register') }}">Rejestracja</a>
+        {% endif %}
     </div>
 </nav>
 
 <div class="container">
-    <h2 style="text-align:center; color:var(--primary-dark);">
-        <i class="fa-solid fa-bullseye"></i> Klasyfikacja strzelców
-    </h2>
+
+    <h2>Klasyfikacja strzelców</h2>
 
     <div class="card">
         <table>
@@ -32,6 +52,7 @@
                     <th>Gole</th>
                 </tr>
             </thead>
+
             <tbody>
                 {% for r in rows %}
                 <tr>
@@ -44,9 +65,8 @@
             </tbody>
         </table>
     </div>
-</div>
 
-<footer>© 2026 System Liga</footer>
+</div>
 
 </body>
 </html>

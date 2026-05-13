@@ -1,41 +1,54 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-<meta charset="UTF-8">
-<title>Edytuj zawodnika</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <title>Edytuj zawodnika – Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
 
-<nav>
-    <div>
-        <a href="{{ url_for('admin_zawodnicy') }}"><i class="fa-solid fa-arrow-left"></i> Powrót</a>
+<nav class="nav-main">
+    <div class="nav-left">
+        <span class="logo">⚽ LIGA – ADMIN</span>
+    </div>
+
+    <div class="nav-right">
+        <a href="{{ url_for('admin_zawodnicy') }}">Powrót</a>
+        <a href="{{ url_for('logout') }}">Wyloguj</a>
     </div>
 </nav>
 
 <div class="container">
-    <div class="card" style="max-width:500px; margin:auto;">
-        <h2><i class="fa-solid fa-pen-to-square"></i> Edytuj zawodnika</h2>
+
+    <h2>Edytuj zawodnika</h2>
+
+    <div class="card">
         <form method="POST">
-            Imię:
+
+            <label>Imię:</label>
             <input type="text" name="imie" value="{{ player[1] }}" required>
-            Nazwisko:
+
+            <label>Nazwisko:</label>
             <input type="text" name="nazwisko" value="{{ player[2] }}" required>
-            Pozycja:
+
+            <label>Pozycja:</label>
             <input type="text" name="pozycja" value="{{ player[3] }}" required>
-            Drużyna:
+
+            <label>Drużyna:</label>
             <select name="druzyna_id" required>
                 {% for t in teams %}
-                <option value="{{ t[0] }}" {% if t[0] == player[4] %}selected{% endif %}>{{ t[1] }}</option>
+                <option value="{{ t[0] }}" {% if t[0] == player[4] %}selected{% endif %}>
+                    {{ t[1] }}
+                </option>
                 {% endfor %}
             </select>
-            <button type="submit">Zapisz</button>
+
+            <button class="btn" type="submit">Zapisz zmiany</button>
         </form>
     </div>
-</div>
 
-<footer>© 2026 System Liga – Edycja zawodnika</footer>
+</div>
 
 </body>
 </html>

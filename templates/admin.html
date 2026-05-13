@@ -1,26 +1,33 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-<meta charset="UTF-8">
-<title>Panel Administratora</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <title>Panel administratora – Użytkownicy</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
 
-<nav>
-    <div>
-        <a href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Strona główna</a>
+<nav class="nav-main">
+    <div class="nav-left">
+        <span class="logo">⚽ LIGA – ADMIN</span>
     </div>
-    <div>
-        <a href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Wyloguj</a>
+
+    <div class="nav-right">
+        <a href="{{ url_for('index') }}">Strona główna</a>
+        <a class="nav-highlight" href="{{ url_for('admin_panel') }}">Panel admina</a>
+        <a href="{{ url_for('admin_druzyny') }}">Drużyny</a>
+        <a href="{{ url_for('admin_zawodnicy') }}">Zawodnicy</a>
+        <a href="{{ url_for('admin_mecze') }}">Mecze</a>
+        <a href="{{ url_for('admin_gole') }}">Gole</a>
+        <a href="{{ url_for('admin_raport_spojnosc') }}">Raport spójności</a>
+        <a href="{{ url_for('logout') }}">Wyloguj</a>
     </div>
 </nav>
 
 <div class="container">
-    <h1 style="text-align:center; color:var(--primary-dark);">
-        <i class="fa-solid fa-user-gear"></i> Zarządzanie użytkownikami
-    </h1>
+
+    <h2>Zarządzanie użytkownikami</h2>
 
     <div class="card">
         <table>
@@ -32,6 +39,7 @@
                     <th>Akcje</th>
                 </tr>
             </thead>
+
             <tbody>
                 {% for user in users %}
                 <tr>
@@ -39,24 +47,17 @@
                     <td>{{ user[1] }}</td>
                     <td><b>{{ user[2] }}</b></td>
                     <td>
-                        <a href="{{ url_for('promote', uid=user[0], role='Trener') }}" class="btn" style="background:#f39c12">
-                            Daj Trenera
-                        </a>
-                        <a href="{{ url_for('promote', uid=user[0], role='Uzytkownik') }}" class="btn" style="background:#7f8c8d">
-                            Zdejmij
-                        </a>
-                        <a href="{{ url_for('promote', uid=user[0], role='Administrator') }}" class="btn" style="background:var(--primary)">
-                            Admin
-                        </a>
+                        <a class="btn-warning btn" href="{{ url_for('promote', uid=user[0], role='Trener') }}">Nadaj Trenera</a>
+                        <a class="btn" href="{{ url_for('promote', uid=user[0], role='Uzytkownik') }}">Użytkownik</a>
+                        <a class="btn" href="{{ url_for('promote', uid=user[0], role='Administrator') }}">Administrator</a>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-</div>
 
-<footer>© 2026 System Liga – Panel administratora</footer>
+</div>
 
 </body>
 </html>

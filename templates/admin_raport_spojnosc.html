@@ -1,38 +1,48 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-<meta charset="UTF-8">
-<title>Raport spójności wyników</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <title>Raport spójności – Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
 
-<nav>
-    <div>
-        <a href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Strona główna</a>
-        <a href="{{ url_for('admin_panel') }}"><i class="fa-solid fa-user-gear"></i> Panel admina</a>
+<nav class="nav-main">
+    <div class="nav-left">
+        <span class="logo">⚽ LIGA – ADMIN</span>
+    </div>
+
+    <div class="nav-right">
+        <a href="{{ url_for('index') }}">Strona główna</a>
+        <a class="nav-highlight" href="{{ url_for('admin_panel') }}">Panel admina</a>
+        <a href="{{ url_for('admin_druzyny') }}">Drużyny</a>
+        <a href="{{ url_for('admin_zawodnicy') }}">Zawodnicy</a>
+        <a href="{{ url_for('admin_mecze') }}">Mecze</a>
+        <a href="{{ url_for('admin_gole') }}">Gole</a>
+        <a href="{{ url_for('admin_raport_spojnosc') }}">Raport spójności</a>
+        <a href="{{ url_for('logout') }}">Wyloguj</a>
     </div>
 </nav>
 
 <div class="container">
-    <h2 style="text-align:center; color:var(--primary-dark);">
-        <i class="fa-solid fa-scale-balanced"></i> Raport spójności wyników (RB5)
-    </h2>
+
+    <h2>Raport spójności wyników</h2>
 
     <div class="card">
         <table>
             <thead>
                 <tr>
-                    <th>Mecz</th>
+                    <th>ID meczu</th>
                     <th>Data</th>
                     <th>Gospodarz</th>
                     <th>Gość</th>
                     <th>Wynik</th>
-                    <th>Liczba goli (Gol)</th>
+                    <th>Liczba goli</th>
                     <th>Spójność</th>
                 </tr>
             </thead>
+
             <tbody>
                 {% for r in raport %}
                 <tr class="{{ 'ok' if r[7] else 'bad' }}">
@@ -40,17 +50,22 @@
                     <td>{{ r[1] }}</td>
                     <td>{{ r[2] }}</td>
                     <td>{{ r[3] }}</td>
-                    <td>{{ r[4] }} : {{ r[5] }}</td>
+                    <td><b>{{ r[4] }} : {{ r[5] }}</b></td>
                     <td>{{ r[6] }}</td>
-                    <td>{{ 'OK' if r[7] else 'NIESPÓJNE' }}</td>
+                    <td>
+                        {% if r[7] %}
+                            <span style="color:green; font-weight:700;">OK</span>
+                        {% else %}
+                            <span style="color:red; font-weight:700;">NIESPÓJNE</span>
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-</div>
 
-<footer>© 2026 System Liga – Raport spójności</footer>
+</div>
 
 </body>
 </html>

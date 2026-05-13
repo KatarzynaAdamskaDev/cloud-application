@@ -1,36 +1,35 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-<meta charset="UTF-8">
-<title>Historia spotkań drużyny</title>
-
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
+    <meta charset="UTF-8">
+    <title>Historia spotkań – Panel trenera</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
 
-<!-- NAVBAR -->
-<nav>
-    <div>
-        <a href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Strona główna</a>
-        <a href="{{ url_for('trener_select') }}"><i class="fa-solid fa-list-check"></i> Panel trenera</a>
+<nav class="nav-main">
+    <div class="nav-left">
+        <span class="logo">⚽ LIGA</span>
+    </div>
+
+    <div class="nav-right">
+        <a href="{{ url_for('index') }}">Strona główna</a>
+        <a class="nav-highlight" href="{{ url_for('trener_select') }}">Panel trenera</a>
+
+        {% if session.get('rola') == 'Administrator' %}
+            <a class="nav-highlight" href="{{ url_for('admin_panel') }}">Admin</a>
+        {% endif %}
+
+        <a href="{{ url_for('logout') }}">Wyloguj</a>
     </div>
 </nav>
 
-<!-- HEADER IMAGE -->
-<img src="{{ url_for('static', filename='img/history.jpg') }}"
-     style="width:100%; max-height:240px; object-fit:cover; box-shadow:0 4px 12px rgba(0,0,0,0.2);">
-
 <div class="container">
 
-    <div class="card">
-        <h2>
-            <i class="fa-solid fa-clock-rotate-left"></i>
-            Historia spotkań drużyny:
-            <b>{{ team[0] if team else 'Nieznana' }}</b>
-        </h2>
+    <h2>Historia spotkań drużyny: {{ team[0] if team else 'Nieznana' }}</h2>
 
+    <div class="card">
         <table>
             <thead>
                 <tr>
@@ -40,6 +39,7 @@
                     <th>Wynik</th>
                 </tr>
             </thead>
+
             <tbody>
                 {% for m in mecze %}
                 <tr>
@@ -49,15 +49,15 @@
                     <td><b>{{ m[3] if m[3] is not none else '?' }} : {{ m[4] if m[4] is not none else '?' }}</b></td>
                 </tr>
                 {% else %}
-                <tr><td colspan="4">Brak historii spotkań.</td></tr>
+                <tr>
+                    <td colspan="4">Brak meczów tej drużyny.</td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 
 </div>
-
-<footer>© 2026 System Liga – Historia spotkań</footer>
 
 </body>
 </html>

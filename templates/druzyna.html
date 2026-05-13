@@ -1,79 +1,114 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-<meta charset="UTF-8">
-<title>Szczegóły drużyny</title>
-
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
+    <meta charset="UTF-8">
+    <title>Drużyna – System Liga</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
 
-<nav>
-    <div>
-        <a href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Strona główna</a>
-        <a href="{{ url_for('druzyny_list') }}"><i class="fa-solid fa-people-group"></i> Drużyny</a>
-        <a href="{{ url_for('zawodnicy_list') }}"><i class="fa-solid fa-person-running"></i> Zawodnicy</a>
+<!-- NAVBAR -->
+<nav class="nav-main">
+    <div class="nav-left">
+        <span class="logo">⚽ LIGA</span>
+    </div>
+
+    <div class="nav-right">
+        <a href="{{ url_for('index') }}">Strona główna</a>
+        <a href="{{ url_for('druzyny_list') }}">Drużyny</a>
+        <a href="{{ url_for('zawodnicy_list') }}">Zawodnicy</a>
+        <a href="{{ url_for('mecze_list') }}">Mecze</a>
+        <a href="{{ url_for('strzelcy') }}">Strzelcy</a>
+        <a href="{{ url_for('tabela_ligowa') }}">Tabela</a>
+        <a href="{{ url_for('terminarz') }}">Terminarz</a>
+
+        {% if session.get('rola') in ['Trener', 'Administrator'] %}
+            <a class="nav-highlight" href="{{ url_for('trener_select') }}">Panel trenera</a>
+        {% endif %}
+
+        {% if session.get('rola') == 'Administrator' %}
+            <a class="nav-highlight" href="{{ url_for('admin_panel') }}">Admin</a>
+        {% endif %}
+
+        {% if session.get('user_login') %}
+            <a href="{{ url_for('logout') }}">Wyloguj</a>
+        {% else %}
+            <a href="{{ url_for('login') }}">Logowanie</a>
+            <a href="{{ url_for('register') }}">Rejestracja</a>
+        {% endif %}
     </div>
 </nav>
 
 <div class="container">
 
     {% if team %}
-    <div class="card">
-        <h2><i class="fa-solid fa-shield-halved"></i> {{ team[1] }} ({{ team[2] }})</h2>
-        <p>Punkty: <b>{{ team[3] }}</b></p>
-    </div>
+        <div class="card">
+            <h2>{{ team[1] }} <span style="color:var(--text-light)">({{ team[2] }})</span></h2>
+            <p>Punkty: <b>{{ team[3] }}</b></p>
+        </div>
 
-    <div class="card">
-        <h3><i class="fa-solid fa-users"></i> Zawodnicy</h3>
-        <table>
-            <thead>
-                <tr><th>Imię</th><th>Nazwisko</th><th>Pozycja</th></tr>
-            </thead>
-            <tbody>
-                {% for p in players %}
-                <tr>
-                    <td>{{ p[1] }}</td>
-                    <td>{{ p[2] }}</td>
-                    <td>{{ p[3] }}</td>
-                </tr>
-                {% else %}
-                <tr><td colspan="3">Brak zawodników.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+        <div class="card">
+            <h3>Zawodnicy</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Imię</th>
+                        <th>Nazwisko</th>
+                        <th>Pozycja</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in players %}
+                    <tr>
+                        <td>{{ p[1] }}</td>
+                        <td>{{ p[2] }}</td>
+                        <td>{{ p[3] }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3">Brak zawodników.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
-    <div class="card">
-        <h3><i class="fa-solid fa-futbol"></i> Ostatnie mecze</h3>
-        <table>
-            <thead>
-                <tr><th>Data</th><th>Gospodarz</th><th>Wynik</th><th>Gość</th></tr>
-            </thead>
-            <tbody>
-                {% for m in matches %}
-                <tr>
-                    <td>{{ m[0] }}</td>
-                    <td>{{ m[1] }}</td>
-                    <td>{{ m[3] }} : {{ m[4] }}</td>
-                    <td>{{ m[2] }}</td>
-                </tr>
-                {% else %}
-                <tr><td colspan="4">Brak meczów.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+        <div class="card">
+            <h3>Ostatnie mecze</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Gospodarz</th>
+                        <th>Wynik</th>
+                        <th>Gość</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in matches %}
+                    <tr>
+                        <td>{{ m[0] }}</td>
+                        <td>{{ m[1] }}</td>
+                        <td><b>{{ m[3] }} : {{ m[4] }}</b></td>
+                        <td>{{ m[2] }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4">Brak meczów.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
     {% else %}
-    <p>Nie znaleziono drużyny.</p>
+        <div class="card">
+            <p>Nie znaleziono drużyny.</p>
+        </div>
     {% endif %}
 
 </div>
-
-<footer>© 2026 System Liga</footer>
 
 </body>
 </html>

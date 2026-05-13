@@ -1,56 +1,72 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-<meta charset="UTF-8">
-<title>Admin – Gole</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <title>Admin – Gole</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
 
-<nav>
-    <div>
-        <a href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Strona główna</a>
-        <a href="{{ url_for('admin_panel') }}"><i class="fa-solid fa-user-gear"></i> Użytkownicy</a>
-        <a href="{{ url_for('admin_druzyny') }}"><i class="fa-solid fa-people-group"></i> Drużyny</a>
-        <a href="{{ url_for('admin_zawodnicy') }}"><i class="fa-solid fa-person-running"></i> Zawodnicy</a>
-        <a href="{{ url_for('admin_mecze') }}"><i class="fa-solid fa-futbol"></i> Mecze</a>
-        <a href="{{ url_for('admin_gole') }}"><i class="fa-solid fa-bullseye"></i> Gole</a>
+<nav class="nav-main">
+    <div class="nav-left">
+        <span class="logo">⚽ LIGA – ADMIN</span>
     </div>
-    <div>
-        <a href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Wyloguj</a>
+
+    <div class="nav-right">
+        <a href="{{ url_for('index') }}">Strona główna</a>
+        <a class="nav-highlight" href="{{ url_for('admin_panel') }}">Panel admina</a>
+        <a href="{{ url_for('admin_druzyny') }}">Drużyny</a>
+        <a href="{{ url_for('admin_zawodnicy') }}">Zawodnicy</a>
+        <a href="{{ url_for('admin_mecze') }}">Mecze</a>
+        <a href="{{ url_for('admin_gole') }}">Gole</a>
+        <a href="{{ url_for('admin_raport_spojnosc') }}">Raport spójności</a>
+        <a href="{{ url_for('logout') }}">Wyloguj</a>
     </div>
 </nav>
 
 <div class="container">
-    <h2 style="text-align:center; color:var(--primary-dark);">
-        Zarządzanie golami
-    </h2>
 
+    <h2>Zarządzanie golami</h2>
+
+    <!-- FORMULARZ DODAWANIA GOLA -->
     <div class="card">
+        <h3>Dodaj gola</h3>
+
         <form method="POST">
-            <b>Dodaj gola:</b><br><br>
-            Mecz:
+
+            <label>Mecz:</label>
             <select name="mecz_id" required>
                 {% for m in matches %}
-                <option value="{{ m[0] }}">{{ m[0] }} - {{ m[2] }} vs {{ m[3] }} ({{ m[1] }})</option>
+                <option value="{{ m[0] }}">
+                    {{ m[0] }} – {{ m[2] }} vs {{ m[3] }} ({{ m[1] }})
+                </option>
                 {% endfor %}
             </select>
-            Zawodnik:
+
+            <label>Zawodnik:</label>
             <select name="zawodnik_id" required>
                 {% for p in players %}
-                <option value="{{ p[0] }}">{{ p[1] }} {{ p[2] }} ({{ p[3] }})</option>
+                <option value="{{ p[0] }}">
+                    {{ p[1] }} {{ p[2] }} ({{ p[3] }})
+                </option>
                 {% endfor %}
             </select>
-            Minuta:
+
+            <label>Minuta:</label>
             <input type="number" name="minuta" required>
-            Typ:
-            <input type="text" name="typ" value="normalny">
-            <button type="submit"><i class="fa-solid fa-plus"></i> Dodaj</button>
+
+            <label>Typ zdarzenia:</label>
+            <input type="text" name="typ" value="gol">
+
+            <button class="btn" type="submit">Dodaj</button>
         </form>
     </div>
 
+    <!-- LISTA GOLI -->
     <div class="card">
+        <h3>Lista goli</h3>
+
         <table>
             <thead>
                 <tr>
@@ -65,6 +81,7 @@
                     <th>Akcje</th>
                 </tr>
             </thead>
+
             <tbody>
                 {% for g in goals %}
                 <tr>
@@ -77,20 +94,21 @@
                     <td>{{ g[7] }}</td>
                     <td>{{ g[8] }}</td>
                     <td>
-                        <a href="{{ url_for('admin_gol_delete', gol_id=g[0]) }}" class="btn" style="background:#e53935;">
+                        <a class="btn-danger btn" href="{{ url_for('admin_gol_delete', gol_id=g[0]) }}">
                             Usuń
                         </a>
                     </td>
                 </tr>
                 {% else %}
-                <tr><td colspan="9">Brak goli.</td></tr>
+                <tr>
+                    <td colspan="9">Brak zarejestrowanych goli.</td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-</div>
 
-<footer>© 2026 System Liga – Panel goli</footer>
+</div>
 
 </body>
 </html>
