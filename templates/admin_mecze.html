@@ -48,7 +48,10 @@
             <input type="number" name="wynik_g">
             Wynik Gość:
             <input type="number" name="wynik_gosc">
-            <button type="submit"><i class="fa-solid fa-plus"></i> Dodaj</button>
+            <button type="submit" class="btn">
+    <i class="fa-solid fa-plus"></i> Dodaj
+</button>
+
         </form>
     </div>
 
@@ -73,9 +76,10 @@
                     <td>{{ m[4] }} : {{ m[5] }}</td>
                     <td>{{ m[3] }}</td>
                     <td>
-                        <a href="{{ url_for('admin_mecz_delete', mecz_id=m[0]) }}" class="btn" style="background:#e53935;">
-                            Usuń
-                        </a>
+                       <a href="{{ url_for('admin_mecz_delete', mecz_id=m[0]) }}" class="btn danger">
+    <i class="fa-solid fa-trash"></i> Usuń
+</a>
+
                     </td>
                 </tr>
                 {% else %}
