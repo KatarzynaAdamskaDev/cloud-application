@@ -27,7 +27,7 @@
    ============================================ */
 
 body {
-    font-family: 'Segoe UI', sans-serif;
+    font-family: "Times New Roman", serif !important;
     background: var(--bg);
     margin: 0;
     color: var(--text);
