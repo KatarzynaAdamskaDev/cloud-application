@@ -5,13 +5,20 @@
     <title>System Liga – Strona główna</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-
+<script>
+  const links = document.querySelectorAll('.nav-right a');
+  links.forEach(link => {
+    if (link.href === window.location.href) {
+      link.classList.add('active');
+    }
+  });
+</script>
 <body>
 
 <!-- NAVBAR -->
 <nav class="nav-main">
     <div class="nav-left">
-        <span class="logo">LIGA</span>
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="System Liga" class="nav-logo">
     </div>
 
     <div class="nav-right">
@@ -44,10 +51,7 @@
 
 <!-- HERO BANNER -->
 <div class="hero-banner">
-    <div class="hero-overlay">
-        <h1>Witamy w Systemie Liga</h1>
-        <p>Analizy, statystyki, terminarz i pełna kontrola nad rozgrywkami</p>
-    </div>
+    <img src="{{ url_for('static', filename='banner.gif') }}" alt="System Liga Banner" class="hero-gif">
 </div>
 
 
