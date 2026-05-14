@@ -109,6 +109,32 @@
     {% endif %}
 
 </div>
+<div class="card">
+    <h3>Wykres straconych goli</h3>
+    <canvas id="lostGoalsChart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+fetch("/api/lost_goals/{{ team[0] }}")
+    .then(res => res.json())
+    .then(data => {
+        const ctx = document.getElementById("lostGoalsChart");
+        new Chart(ctx, {
+            type: "bar",
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: "Stracone gole",
+                    data: data.values,
+                    backgroundColor: "#5a2ea6"
+                }]
+            }
+        });
+    });
+</script>
+
 
 </body>
 </html>
