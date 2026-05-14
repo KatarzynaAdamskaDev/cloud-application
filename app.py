@@ -1238,3 +1238,53 @@ def admin_gol_delete(gol_id):
         conn.close()
 
     return redirect(url_for("admin_gole"))
+
+# =========================
+# DRUGIE API – STRACONE GOLE W CZASIE
+# (Twoje urwane "ORD..." zostało naprawione)
+# =========================
+
+@app.route('/api/lost_goals/<int:team_id>')
+def api_lost_goals(team_id):
+    conn = get_db_conn()
+    if not conn:
+        return {"labels": [], "values": []}
+
+    labels = []
+    values = []
+
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT
+                m.DataMeczu,
+                SUM(
+                    CASE
+                        WHEN z.DruzynaID != ? THEN 1
+                        ELSE 0
+                    END
+                ) AS LostGoals
+            FROM Mecz m
+            LEFT JOIN Gol g ON g.MeczID = m.MeczID
+            LEFT JOIN Zawodnik z ON g.ZawodnikID = z.ZawodnikID
+            WHERE m.DruzynaGospodarzID = ? OR m.DruzynaGoscID = ?
+            GROUP BY m.DataMeczu
+            ORDER BY m.DataMeczu
+        """, (team_id, team_id, team_id))
+
+        for row in cur.fetchall():
+            labels.append(str(row[0]))
+            values.append(row[1])
+
+    finally:
+        conn.close()
+
+    return {"labels": labels, "values": values}
+
+
+# =========================
+# START APLIKACJI
+# =========================
+
+if __name__ == "__main__":
+    app.run(debug=True)
