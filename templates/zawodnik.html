@@ -5,19 +5,12 @@
     <title>Profil zawodnika – System Liga</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<script>
-  const links = document.querySelectorAll('.nav-right a');
-  links.forEach(link => {
-    if (link.href === window.location.href) {
-      link.classList.add('active');
-    }
-  });
-</script>
+
 <body>
 
 <nav class="nav-main">
     <div class="nav-left">
-        <img src="{{ url_for('static', filename='logo.png') }}" alt="System Liga" class="nav-logo">
+        <span class="logo">LIGA</span>
     </div>
 
     <div class="nav-right">
@@ -46,7 +39,6 @@
         {% endif %}
     </div>
 </nav>
-<a class="btn" href="{{ url_for('zawodnicy_list') }}">← Wszyscy zawodnicy</a>
 
 <div class="container">
 
