@@ -5,19 +5,12 @@
     <title>Drużyna – System Liga</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<script>
-  const links = document.querySelectorAll('.nav-right a');
-  links.forEach(link => {
-    if (link.href === window.location.href) {
-      link.classList.add('active');
-    }
-  });
-</script>
+
 <body>
 
 <nav class="nav-main">
     <div class="nav-left">
-       <img src="{{ url_for('static', filename='logo.png') }}" alt="System Liga" class="nav-logo">
+        <span class="logo">LIGA</span>
     </div>
 
     <div class="nav-right">
@@ -47,7 +40,6 @@
     </div>
 </nav>
 <div class="container">
-<a class="btn" href="{{ url_for('druzyny_list') }}">← Wszystkie drużyny</a>
 
     {% if team %}
         <div class="card">
@@ -116,32 +108,6 @@
     {% endif %}
 
 </div>
-<div class="card">
-    <h3>Wykres straconych goli</h3>
-    <canvas id="lostGoalsChart"></canvas>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
-fetch("/api/lost_goals/{{ team[0] }}")
-    .then(res => res.json())
-    .then(data => {
-        const ctx = document.getElementById("lostGoalsChart");
-        new Chart(ctx, {
-            type: "bar",
-            data: {
-                labels: data.labels,
-                datasets: [{
-                    label: "Stracone gole",
-                    data: data.values,
-                    backgroundColor: "#5a2ea6"
-                }]
-            }
-        });
-    });
-</script>
-
 
 </body>
 </html>
