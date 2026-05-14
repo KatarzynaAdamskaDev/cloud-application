@@ -9,13 +9,12 @@ app.secret_key = os.environ.get("SECRET_KEY", "projekt-liga-2026-bezpieczny-kluc
 
 CACHED_DRIVER = None
 
-
 # =========================
-#  POŁĄCZENIE Z BAZĄ DANYCH
+# POŁĄCZENIE Z BAZĄ DANYCH
 # =========================
 
 def get_db_conn():
-    """Połączenie z Azure SQL, z cache'owaniem sterownika (pseudo-singleton)."""
+    """Połączenie z Azure SQL, z cache'owaniem sterownika."""
     global CACHED_DRIVER
     raw_conn_str = os.environ.get("DATABASE_URL")
     if not raw_conn_str:
@@ -42,34 +41,40 @@ def get_db_conn():
             continue
     return None
 
-
 # =========================
-#  POMOCNICZE
+# POMOCNICZE
 # =========================
 
 def hash_password(pwd: str) -> str:
     """Proste hashowanie haseł (SHA-256)."""
     return hashlib.sha256(pwd.encode("utf-8")).hexdigest()
 
+def normalize_role(role: str) -> str:
+    """Normalizuje rolę, aby dekorator działał poprawnie."""
+    if not role:
+        return ""
+    return role.strip().capitalize()
 
 def role_required(*roles):
     """Dekorator do kontroli ról (Administrator, Trener, Uzytkownik)."""
+    normalized = [normalize_role(r) for r in roles]
+
     def decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
-            if session.get("rola") not in roles:
+            user_role = normalize_role(session.get("rola", ""))
+            if user_role not in normalized:
                 flash("Brak uprawnień do tego zasobu.", "danger")
                 return redirect(url_for("index"))
             return f(*args, **kwargs)
         return wrapper
     return decorator
 
-
 def analiza_skutecznosci(zawodnicy):
     """
     Proste drzewo decyzyjne:
     - główne kryterium: liczba goli (waga 3)
-    - dodatkowe kryterium: asysty (waga 1, tu 0 – brak tabeli Asysta w ERD)
+    - dodatkowe kryterium: asysty (waga 1)
     """
     if not zawodnicy:
         return None
@@ -80,6 +85,7 @@ def analiza_skutecznosci(zawodnicy):
     for z in zawodnicy:
         imie, nazwisko, gole, asysty = z[0], z[1], z[2], z[3]
         score = (gole * 3) + (asysty * 1)
+
         if score > max_score:
             max_score = score
             najlepszy = {
@@ -88,31 +94,160 @@ def analiza_skutecznosci(zawodnicy):
                 "asysty": asysty,
                 "score": score
             }
+
     return najlepszy
 
+# =========================
+# LOGOWANIE / REJESTRACJA
+# =========================
 
-def aktualizuj_punkty_po_meczu(cursor, gosp_id, gosc_id, wynik_g, wynik_gosc):
+@app.route("/login", methods=["GET", "POST"])
+def login():
     """
-    RB1: 3 pkt za zwycięstwo, 1 za remis, 0 za porażkę.
-    Aktualizuje pole Punkty w tabeli Druzyna.
+    Logowanie użytkownika:
+    - po sukcesie przekierowanie na index
+    - hasło porównywane po SHA-256
     """
-    if wynik_g is None or wynik_gosc is None:
-        return  # mecz bez wyniku – nie naliczamy
+    if request.method == "POST":
+        l_val = request.form.get("login")
+        p_val = request.form.get("password")
+        hashed = hash_password(p_val)
 
-    gosp = int(wynik_g)
-    gosc = int(wynik_gosc)
+        conn = get_db_conn()
+        if not conn:
+            flash("Brak połączenia z bazą danych.", "danger")
+            return render_template("login.html")
 
-    if gosp > gosc:
-        cursor.execute("UPDATE Druzyna SET Punkty = Punkty + 3 WHERE DruzynaID = ?", (gosp_id,))
-    elif gosc > gosp:
-        cursor.execute("UPDATE Druzyna SET Punkty = Punkty + 3 WHERE DruzynaID = ?", (gosc_id,))
-    else:
-        cursor.execute("UPDATE Druzyna SET Punkty = Punkty + 1 WHERE DruzynaID = ?", (gosp_id,))
-        cursor.execute("UPDATE Druzyna SET Punkty = Punkty + 1 WHERE DruzynaID = ?", (gosc_id,))
+        try:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT UzytkownikID, Rola
+                FROM Uzytkownik
+                WHERE Login = ? AND HasloHash = ?
+            """, (l_val, hashed))
+            user = cursor.fetchone()
+        finally:
+            conn.close()
+
+        if user:
+            # 🔥 NORMALIZACJA ROLI — KLUCZOWA POPRAWKA
+            session.update({
+                "user_id": user[0],
+                "user_login": l_val,
+                "rola": normalize_role(user[1])
+            })
+
+            flash("Zalogowano pomyślnie!", "success")
+            return redirect(url_for("index"))
+        else:
+            flash("Błędny login lub hasło!", "danger")
+            return render_template("login.html")
+
+    return render_template("login.html")
+
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    """
+    Rejestracja nowego konta:
+    - po sukcesie przekierowanie na /login
+    - hasło zapisywane jako SHA-256
+    """
+    if request.method == "POST":
+        l_val = request.form.get("login")
+        p_val = request.form.get("password")
+        hashed = hash_password(p_val)
+
+        conn = get_db_conn()
+        if not conn:
+            flash("Brak połączenia z bazą danych.", "danger")
+            return render_template("register.html")
+
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT Login FROM Uzytkownik WHERE Login = ?", (l_val,))
+            if cursor.fetchone():
+                flash("Ten login jest już zajęty!", "warning")
+            else:
+                cursor.execute("""
+                    INSERT INTO Uzytkownik (Login, HasloHash, Rola)
+                    VALUES (?, ?, 'Uzytkownik')
+                """, (l_val, hashed))
+                conn.commit()
+                flash("Konto utworzone! Możesz się zalogować.", "success")
+                return redirect(url_for("login"))
+        finally:
+            conn.close()
+
+    return render_template("register.html")
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    flash("Wylogowano.", "info")
+    return redirect(url_for("login"))
 
 
 # =========================
-#  WIDOKI PUBLICZNE
+# PANEL ADMINA – UŻYTKOWNICY
+# =========================
+
+@app.route("/admin")
+@role_required("Administrator")
+def admin_panel():
+    """
+    Panel administratora:
+    - zarządzanie rolami użytkowników
+    """
+    conn = get_db_conn()
+    if not conn:
+        flash("Brak połączenia z bazą danych.", "danger")
+        return redirect(url_for("index"))
+
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT UzytkownikID, Login, Rola FROM Uzytkownik")
+        users = cursor.fetchall()
+    finally:
+        conn.close()
+
+    return render_template("admin.html", users=users)
+
+
+@app.route("/promote/<int:uid>/<string:role>")
+@role_required("Administrator")
+def promote(uid, role):
+    """
+    Zmiana roli użytkownika (Administrator / Trener / Uzytkownik).
+    """
+    conn = get_db_conn()
+    if not conn:
+        flash("Brak połączenia z bazą danych.", "danger")
+        return redirect(url_for("admin_panel"))
+
+    try:
+        cursor = conn.cursor()
+
+        # 🔥 NORMALIZACJA ROLI — DRUGA KLUCZOWA POPRAWKA
+        new_role = normalize_role(role)
+
+        cursor.execute("""
+            UPDATE Uzytkownik
+            SET Rola = ?
+            WHERE UzytkownikID = ?
+        """, (new_role, uid))
+
+        conn.commit()
+        flash(f"Zmieniono rolę na: {new_role}", "info")
+
+    finally:
+        conn.close()
+
+    return redirect(url_for("admin_panel"))
+
+# =========================
+# WIDOKI PUBLICZNE
 # =========================
 
 @app.route("/")
@@ -126,7 +261,7 @@ def index():
 
     # Najlepszy zawodnik
     cursor.execute("""
-        SELECT 
+        SELECT
             z.Imie,
             z.Nazwisko,
             COUNT(g.GolID) AS Gole,
@@ -139,23 +274,23 @@ def index():
 
     # Lider tabeli
     cursor.execute("""
-        SELECT TOP 1 Nazwa, Punkty 
-        FROM Druzyna 
+        SELECT TOP 1 Nazwa, Punkty
+        FROM Druzyna
         ORDER BY Punkty DESC
     """)
     lider = cursor.fetchone()
 
     # Status sezonu
     cursor.execute("""
-        SELECT TOP 1 NazwaSezonu, Status 
-        FROM TerminarzRozgrywek 
+        SELECT TOP 1 NazwaSezonu, Status
+        FROM TerminarzRozgrywek
         ORDER BY DataRozpoczecia DESC
     """)
     sezon = cursor.fetchone()
 
     # Mecze
     cursor.execute("""
-        SELECT 
+        SELECT
             m.DataMeczu,
             d1.Nazwa AS Gospodarz,
             d2.Nazwa AS Gosc,
@@ -189,6 +324,7 @@ def index():
 def druzyny_list():
     conn = get_db_conn()
     teams = []
+
     if not conn:
         flash("Brak połączenia z bazą danych.", "danger")
         return render_template("druzyny.html", teams=teams)
@@ -229,7 +365,7 @@ def druzyna_detail(team_id):
         players = cursor.fetchall()
 
         cursor.execute("""
-            SELECT 
+            SELECT
                 m.DataMeczu,
                 d1.Nazwa AS Gospodarz,
                 d2.Nazwa AS Gosc,
@@ -242,6 +378,7 @@ def druzyna_detail(team_id):
             ORDER BY m.DataMeczu DESC
         """, (team_id, team_id))
         matches = cursor.fetchall()
+
     finally:
         conn.close()
 
@@ -252,6 +389,7 @@ def druzyna_detail(team_id):
 def zawodnicy_list():
     conn = get_db_conn()
     players = []
+
     if not conn:
         flash("Brak połączenia z bazą danych.", "danger")
         return render_template("zawodnicy.html", players=players)
@@ -276,12 +414,14 @@ def zawodnik_detail(player_id):
     conn = get_db_conn()
     player = None
     stats = {"gole": 0}
+
     if not conn:
         flash("Brak połączenia z bazą danych.", "danger")
         return render_template("zawodnik.html", player=player, stats=stats)
 
     try:
         cursor = conn.cursor()
+
         cursor.execute("""
             SELECT z.ZawodnikID, z.Imie, z.Nazwisko, z.Pozycja, d.Nazwa
             FROM Zawodnik z
@@ -292,6 +432,7 @@ def zawodnik_detail(player_id):
 
         cursor.execute("SELECT COUNT(*) FROM Gol WHERE ZawodnikID = ?", (player_id,))
         stats["gole"] = cursor.fetchone()[0]
+
     finally:
         conn.close()
 
@@ -302,6 +443,7 @@ def zawodnik_detail(player_id):
 def mecze_list():
     conn = get_db_conn()
     matches = []
+
     if not conn:
         flash("Brak połączenia z bazą danych.", "danger")
         return render_template("mecze.html", matches=matches)
@@ -309,7 +451,7 @@ def mecze_list():
     try:
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT 
+            SELECT
                 m.MeczID,
                 m.DataMeczu,
                 d1.Nazwa AS Gospodarz,
@@ -330,20 +472,19 @@ def mecze_list():
 
 @app.route("/mecz/<int:mecz_id>")
 def mecz_detail(mecz_id):
-    """
-    Szczegóły meczu – naprawia problem z brakiem podstrony mecz.detail.
-    """
     conn = get_db_conn()
     mecz = None
     gole = []
+
     if not conn:
         flash("Brak połączenia z bazą danych.", "danger")
         return render_template("mecz.html", mecz=mecz, gole=gole)
 
     try:
         cursor = conn.cursor()
+
         cursor.execute("""
-            SELECT 
+            SELECT
                 m.MeczID,
                 m.DataMeczu,
                 d1.Nazwa AS Gospodarz,
@@ -358,7 +499,7 @@ def mecz_detail(mecz_id):
         mecz = cursor.fetchone()
 
         cursor.execute("""
-            SELECT 
+            SELECT
                 g.Minuta,
                 g.Typ,
                 z.Imie,
@@ -369,6 +510,7 @@ def mecz_detail(mecz_id):
             ORDER BY g.Minuta
         """, (mecz_id,))
         gole = cursor.fetchall()
+
     finally:
         conn.close()
 
@@ -377,11 +519,9 @@ def mecz_detail(mecz_id):
 
 @app.route("/strzelcy")
 def strzelcy():
-    """
-    Klasyfikacja strzelców – PU2 (najlepszy zawodnik) w formie tabeli.
-    """
     conn = get_db_conn()
     rows = []
+
     if not conn:
         flash("Brak połączenia z bazą danych.", "danger")
         return render_template("strzelcy.html", rows=rows)
@@ -389,7 +529,7 @@ def strzelcy():
     try:
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT 
+            SELECT
                 z.Imie,
                 z.Nazwisko,
                 d.Nazwa AS Druzyna,
@@ -409,11 +549,9 @@ def strzelcy():
 
 @app.route("/tabela")
 def tabela_ligowa():
-    """
-    Tabela ligowa – PU1 (najlepsza drużyna) w formie tabeli.
-    """
     conn = get_db_conn()
     rows = []
+
     if not conn:
         flash("Brak połączenia z bazą danych.", "danger")
         return render_template("tabela.html", rows=rows)
@@ -434,18 +572,17 @@ def tabela_ligowa():
 
 @app.route("/terminarz")
 def terminarz():
-    """
-    Terminarz rozgrywek – lista meczów w ramach ostatniego sezonu.
-    """
     conn = get_db_conn()
     sezon = None
     mecze = []
+
     if not conn:
         flash("Brak połączenia z bazą danych.", "danger")
         return render_template("terminarz.html", sezon=sezon, mecze=mecze)
 
     try:
         cursor = conn.cursor()
+
         cursor.execute("""
             SELECT TOP 1 TerminarzID, NazwaSezonu, DataRozpoczecia, DataZakonczenia, Status
             FROM TerminarzRozgrywek
@@ -455,8 +592,9 @@ def terminarz():
 
         if sezon:
             terminarz_id = sezon[0]
+
             cursor.execute("""
-                SELECT 
+                SELECT
                     m.DataMeczu,
                     d1.Nazwa AS Gospodarz,
                     d2.Nazwa AS Gosc,
@@ -469,103 +607,14 @@ def terminarz():
                 ORDER BY m.DataMeczu
             """, (terminarz_id,))
             mecze = cursor.fetchall()
+
     finally:
         conn.close()
 
     return render_template("terminarz.html", sezon=sezon, mecze=mecze)
 
-
 # =========================
-#  LOGOWANIE / REJESTRACJA
-# =========================
-
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    """
-    Logowanie użytkownika:
-    - po sukcesie przekierowanie na index
-    - hasło porównywane po SHA-256
-    """
-    if request.method == "POST":
-        l_val = request.form.get("login")
-        p_val = request.form.get("password")
-        hashed = hash_password(p_val)
-
-        conn = get_db_conn()
-        if not conn:
-            flash("Brak połączenia z bazą danych.", "danger")
-            return render_template("login.html")
-
-        try:
-            cursor = conn.cursor()
-            cursor.execute("""
-                SELECT UzytkownikID, Rola 
-                FROM Uzytkownik 
-                WHERE Login = ? AND HasloHash = ?
-            """, (l_val, hashed))
-            user = cursor.fetchone()
-        finally:
-            conn.close()
-
-        if user:
-            session.update({
-                "user_id": user[0],
-                "user_login": l_val,
-                "rola": user[1]
-            })
-            flash("Zalogowano pomyślnie!", "success")
-            return redirect(url_for("index"))
-        else:
-            flash("Błędny login lub hasło!", "danger")
-
-    return render_template("login.html")
-
-
-@app.route("/register", methods=["GET", "POST"])
-def register():
-    """
-    Rejestracja nowego konta:
-    - po sukcesie przekierowanie na /login
-    - hasło zapisywane jako SHA-256
-    """
-    if request.method == "POST":
-        l_val = request.form.get("login")
-        p_val = request.form.get("password")
-        hashed = hash_password(p_val)
-
-        conn = get_db_conn()
-        if not conn:
-            flash("Brak połączenia z bazą danych.", "danger")
-            return render_template("register.html")
-
-        try:
-            cursor = conn.cursor()
-            cursor.execute("SELECT Login FROM Uzytkownik WHERE Login = ?", (l_val,))
-            if cursor.fetchone():
-                flash("Ten login jest już zajęty!", "warning")
-            else:
-                cursor.execute("""
-                    INSERT INTO Uzytkownik (Login, HasloHash, Rola) 
-                    VALUES (?, ?, 'Uzytkownik')
-                """, (l_val, hashed))
-                conn.commit()
-                flash("Konto utworzone! Możesz się zalogować.", "success")
-                return redirect(url_for("login"))
-        finally:
-            conn.close()
-
-    return render_template("register.html")
-
-
-@app.route("/logout")
-def logout():
-    session.clear()
-    flash("Wylogowano.", "info")
-    return redirect(url_for("login"))
-
-
-# =========================
-#  PANEL TRENERA
+# PANEL TRENERA
 # =========================
 
 @app.route("/trener")
@@ -573,6 +622,7 @@ def logout():
 def trener_select():
     conn = get_db_conn()
     teams = []
+
     if not conn:
         flash("Brak połączenia z bazą danych.", "danger")
         return render_template("trener_select.html", teams=teams)
@@ -595,6 +645,7 @@ def trener_view(team_id):
     - najskuteczniejszy zawodnik przeciwko wskazanej drużynie (RB8, PU3).
     """
     conn = get_db_conn()
+
     if not conn:
         flash("Brak połączenia z bazą danych.", "danger")
         return render_template("trener.html", team=None, player=None)
@@ -609,21 +660,23 @@ def trener_view(team_id):
         team = cursor.fetchone()
 
         cursor.execute("""
-            SELECT TOP 1 
+            SELECT TOP 1
                 z.Imie,
                 z.Nazwisko,
                 COUNT(g.GolID) AS Gole
             FROM Gol g
             JOIN Mecz m ON g.MeczID = m.MeczID
             JOIN Zawodnik z ON g.ZawodnikID = z.ZawodnikID
-            WHERE 
+            WHERE
                 (m.DruzynaGospodarzID = ? AND z.DruzynaID = m.DruzynaGoscID)
                 OR
                 (m.DruzynaGoscID = ? AND z.DruzynaID = m.DruzynaGospodarzID)
             GROUP BY z.Imie, z.Nazwisko
             ORDER BY Gole DESC
         """, (team_id, team_id))
+
         player = cursor.fetchone()
+
     finally:
         conn.close()
 
@@ -636,17 +689,19 @@ def trener_historia(team_id):
     conn = get_db_conn()
     team = None
     mecze = []
+
     if not conn:
         flash("Brak połączenia z bazą danych.", "danger")
         return render_template("trener_historia.html", team=team, mecze=mecze)
 
     try:
         cursor = conn.cursor()
+
         cursor.execute("SELECT Nazwa FROM Druzyna WHERE DruzynaID = ?", (team_id,))
         team = cursor.fetchone()
 
         cursor.execute("""
-            SELECT 
+            SELECT
                 m.DataMeczu,
                 d1.Nazwa AS Gospodarz,
                 d2.Nazwa AS Gosc,
@@ -658,7 +713,9 @@ def trener_historia(team_id):
             WHERE m.DruzynaGospodarzID = ? OR m.DruzynaGoscID = ?
             ORDER BY m.DataMeczu DESC
         """, (team_id, team_id))
+
         mecze = cursor.fetchall()
+
     finally:
         conn.close()
 
@@ -679,15 +736,16 @@ def lost_goals(team_id):
 
     try:
         cursor = conn.cursor()
+
         cursor.execute("""
-            SELECT 
+            SELECT
                 przeciwnik.Nazwa,
                 COUNT(g.GolID) AS Gole
             FROM Gol g
             JOIN Mecz m ON g.MeczID = m.MeczID
             JOIN Druzyna gosp ON m.DruzynaGospodarzID = gosp.DruzynaID
             JOIN Druzyna gosc ON m.DruzynaGoscID = gosc.DruzynaID
-            JOIN Druzyna przeciwnik ON 
+            JOIN Druzyna przeciwnik ON
                 (m.DruzynaGospodarzID = ? AND przeciwnik.DruzynaID = m.DruzynaGoscID)
                 OR
                 (m.DruzynaGoscID = ? AND przeciwnik.DruzynaID = m.DruzynaGospodarzID)
@@ -700,66 +758,14 @@ def lost_goals(team_id):
         for row in cursor.fetchall():
             labels.append(row[0])
             values.append(row[1])
+
     finally:
         conn.close()
 
     return {"labels": labels, "values": values}
 
-
 # =========================
-#  PANEL ADMINA – UŻYTKOWNICY
-# =========================
-
-@app.route("/admin")
-@role_required("Administrator")
-def admin_panel():
-    """
-    Panel administratora:
-    - zarządzanie rolami użytkowników
-    """
-    conn = get_db_conn()
-    if not conn:
-        flash("Brak połączenia z bazą danych.", "danger")
-        return redirect(url_for("index"))
-
-    try:
-        cursor = conn.cursor()
-        cursor.execute("SELECT UzytkownikID, Login, Rola FROM Uzytkownik")
-        users = cursor.fetchall()
-    finally:
-        conn.close()
-
-    return render_template("admin.html", users=users)
-
-
-@app.route("/promote/<int:uid>/<string:role>")
-@role_required("Administrator")
-def promote(uid, role):
-    """
-    Zmiana roli użytkownika (Administrator / Trener / Uzytkownik).
-    """
-    conn = get_db_conn()
-    if not conn:
-        flash("Brak połączenia z bazą danych.", "danger")
-        return redirect(url_for("admin_panel"))
-
-    try:
-        cursor = conn.cursor()
-        cursor.execute("""
-            UPDATE Uzytkownik 
-            SET Rola = ? 
-            WHERE UzytkownikID = ?
-        """, (role, uid))
-        conn.commit()
-        flash("Zaktualizowano rolę!", "info")
-    finally:
-        conn.close()
-
-    return redirect(url_for("admin_panel"))
-
-
-# =========================
-#  PANEL ADMINA – DRUŻYNY
+# PANEL ADMINA – DRUŻYNY
 # =========================
 
 @app.route("/admin/druzyny", methods=["GET", "POST"])
@@ -818,6 +824,7 @@ def admin_druzyna_edit(team_id):
                 SET Nazwa = ?, Miasto = ?, Punkty = ?
                 WHERE DruzynaID = ?
             """, (nazwa, miasto, int(punkty), team_id))
+
             conn.commit()
             flash("Zaktualizowano drużynę.", "success")
             return redirect(url_for("admin_druzyny"))
@@ -849,12 +856,15 @@ def admin_druzyna_delete(team_id):
 
     try:
         cursor = conn.cursor()
+
         cursor.execute("DELETE FROM Gol WHERE MeczID IN (SELECT MeczID FROM Mecz WHERE DruzynaGospodarzID = ? OR DruzynaGoscID = ?)", (team_id, team_id))
         cursor.execute("DELETE FROM Mecz WHERE DruzynaGospodarzID = ? OR DruzynaGoscID = ?", (team_id, team_id))
         cursor.execute("DELETE FROM Zawodnik WHERE DruzynaID = ?", (team_id,))
         cursor.execute("DELETE FROM Druzyna WHERE DruzynaID = ?", (team_id,))
+
         conn.commit()
-        flash("Usunięto drużynę oraz powiązane dane (mecze, gole, zawodników).", "info")
+        flash("Usunięto drużynę oraz powiązane dane.", "info")
+
     finally:
         conn.close()
 
@@ -862,7 +872,7 @@ def admin_druzyna_delete(team_id):
 
 
 # =========================
-#  PANEL ADMINA – ZAWODNICY
+# PANEL ADMINA – ZAWODNICY
 # =========================
 
 @app.route("/admin/zawodnicy", methods=["GET", "POST"])
@@ -892,6 +902,7 @@ def admin_zawodnicy():
 
     players = []
     teams = []
+
     try:
         cursor = conn.cursor()
         cursor.execute("""
@@ -904,6 +915,7 @@ def admin_zawodnicy():
 
         cursor.execute("SELECT DruzynaID, Nazwa FROM Druzyna ORDER BY Nazwa")
         teams = cursor.fetchall()
+
     finally:
         conn.close()
 
@@ -932,6 +944,7 @@ def admin_zawodnik_edit(player_id):
                 SET Imie = ?, Nazwisko = ?, Pozycja = ?, DruzynaID = ?
                 WHERE ZawodnikID = ?
             """, (imie, nazwisko, pozycja, int(druzyna_id), player_id))
+
             conn.commit()
             flash("Zaktualizowano zawodnika.", "success")
             return redirect(url_for("admin_zawodnicy"))
@@ -969,7 +982,7 @@ def admin_zawodnik_delete(player_id):
         cursor.execute("DELETE FROM Gol WHERE ZawodnikID = ?", (player_id,))
         cursor.execute("DELETE FROM Zawodnik WHERE ZawodnikID = ?", (player_id,))
         conn.commit()
-        flash("Usunięto zawodnika (i jego gole).", "info")
+        flash("Usunięto zawodnika.", "info")
     finally:
         conn.close()
 
@@ -977,7 +990,7 @@ def admin_zawodnik_delete(player_id):
 
 
 # =========================
-#  PANEL ADMINA – MECZE
+# PANEL ADMINA – MECZE
 # =========================
 
 @app.route("/admin/mecze", methods=["GET", "POST"])
@@ -996,9 +1009,8 @@ def admin_mecze():
         wynik_gosc = request.form.get("wynik_gosc") or None
         terminarz_id = request.form.get("terminarz_id") or 1
 
-        # RB2 - drużyny muszą być różne
         if int(gosp) == int(gosc):
-            flash("Drużyna gospodarzy i gości muszą być różne (RB2).", "danger")
+            flash("Drużyny muszą być różne.", "danger")
             return redirect(url_for("admin_mecze"))
 
         try:
@@ -1006,31 +1018,37 @@ def admin_mecze():
             cursor.execute("""
                 INSERT INTO Mecz (DruzynaGospodarzID, DruzynaGoscID, WynikGospodarz, WynikGosc, DataMeczu, StatusMeczu, TerminarzID)
                 VALUES (?, ?, ?, ?, ?, 'zakończony', ?)
-            """, (int(gosp), int(gosc),
-                  int(wynik_g) if wynik_g is not None else None,
-                  int(wynik_gosc) if wynik_gosc is not None else None,
-                  data,
-                  int(terminarz_id)))
-            
+            """, (
+                int(gosp), int(gosc),
+                int(wynik_g) if wynik_g else None,
+                int(wynik_gosc) if wynik_gosc else None,
+                data,
+                int(terminarz_id)
+            ))
+
             mecz_id = cursor.execute("SELECT SCOPE_IDENTITY()").fetchone()[0]
+
             aktualizuj_punkty_po_meczu(
                 cursor,
                 int(gosp),
                 int(gosc),
-                int(wynik_g) if wynik_g is not None else None,
-                int(wynik_gosc) if wynik_gosc is not None else None
+                int(wynik_g) if wynik_g else None,
+                int(wynik_gosc) if wynik_gosc else None
             )
+
             conn.commit()
-            flash("Dodano mecz i zaktualizowano punkty.", "success")
+            flash("Dodano mecz.", "success")
+
         except Exception as e:
             flash(f"Błąd przy dodawaniu meczu: {e}", "danger")
 
     matches = []
     teams = []
+
     try:
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT 
+            SELECT
                 m.MeczID,
                 m.DataMeczu,
                 d1.Nazwa AS Gospodarz,
@@ -1046,6 +1064,7 @@ def admin_mecze():
 
         cursor.execute("SELECT DruzynaID, Nazwa FROM Druzyna ORDER BY Nazwa")
         teams = cursor.fetchall()
+
     finally:
         conn.close()
 
@@ -1065,50 +1084,50 @@ def admin_mecz_delete(mecz_id):
         cursor.execute("DELETE FROM Gol WHERE MeczID = ?", (mecz_id,))
         cursor.execute("DELETE FROM Mecz WHERE MeczID = ?", (mecz_id,))
         conn.commit()
-        flash("Usunięto mecz (i jego gole).", "info")
+        flash("Usunięto mecz.", "info")
     finally:
         conn.close()
 
     return redirect(url_for("admin_mecze"))
 
 
+# =========================
+# PANEL ADMINA – RAPORT SPÓJNOŚCI
+# =========================
+
 @app.route("/admin/raport_spojnosc")
 @role_required("Administrator")
 def admin_raport_spojnosc():
-    """
-    RB5: raport spójności – suma goli z tabeli Gol vs wynik meczu.
-    """
     conn = get_db_conn()
     if not conn:
         flash("Brak połączenia z bazą danych.", "danger")
         return redirect(url_for("admin_panel"))
 
     raport = []
+
     try:
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT 
+            SELECT
                 m.MeczID,
                 m.DataMeczu,
                 d1.Nazwa AS Gospodarz,
                 d2.Nazwa AS Gosc,
                 m.WynikGospodarz,
                 m.WynikGosc,
-                ISNULL((
-                    SELECT COUNT(*) 
-                    FROM Gol g 
-                    WHERE g.MeczID = m.MeczID
-                ), 0) AS LiczbaGoli
+                ISNULL((SELECT COUNT(*) FROM Gol g WHERE g.MeczID = m.MeczID), 0) AS LiczbaGoli
             FROM Mecz m
             JOIN Druzyna d1 ON m.DruzynaGospodarzID = d1.DruzynaID
             JOIN Druzyna d2 ON m.DruzynaGoscID = d2.DruzynaID
             ORDER BY m.DataMeczu DESC
         """)
+
         for row in cursor.fetchall():
             mecz_id, data, gosp, gosc, wg, wgo, liczba_goli = row
-            suma_wyniku = (wg or 0) + (wgo or 0)
-            zgodny = (suma_wyniku == liczba_goli)
+            suma = (wg or 0) + (wgo or 0)
+            zgodny = (suma == liczba_goli)
             raport.append((mecz_id, data, gosp, gosc, wg, wgo, liczba_goli, zgodny))
+
     finally:
         conn.close()
 
@@ -1116,7 +1135,7 @@ def admin_raport_spojnosc():
 
 
 # =========================
-#  PANEL ADMINA – GOLE
+# PANEL ADMINA – GOLE
 # =========================
 
 @app.route("/admin/gole", methods=["GET", "POST"])
@@ -1147,12 +1166,12 @@ def admin_gole():
     goals = []
     matches = []
     players = []
+
     try:
         cursor = conn.cursor()
 
-        # Lista goli z kontekstem meczu i zawodnika
         cursor.execute("""
-            SELECT 
+            SELECT
                 g.GolID,
                 g.MeczID,
                 m.DataMeczu,
@@ -1172,7 +1191,7 @@ def admin_gole():
         goals = cursor.fetchall()
 
         cursor.execute("""
-            SELECT 
+            SELECT
                 m.MeczID,
                 m.DataMeczu,
                 d1.Nazwa AS Gospodarz,
@@ -1185,7 +1204,7 @@ def admin_gole():
         matches = cursor.fetchall()
 
         cursor.execute("""
-            SELECT 
+            SELECT
                 z.ZawodnikID,
                 z.Imie,
                 z.Nazwisko,
@@ -1195,6 +1214,7 @@ def admin_gole():
             ORDER BY d.Nazwa, z.Nazwisko, z.Imie
         """)
         players = cursor.fetchall()
+
     finally:
         conn.close()
 
@@ -1218,42 +1238,3 @@ def admin_gol_delete(gol_id):
         conn.close()
 
     return redirect(url_for("admin_gole"))
-
-@app.route('/api/lost_goals/<int:team_id>')
-def api_lost_goals(team_id):
-    conn = get_db_conn()
-    cur = conn.cursor()
-
-    cur.execute("""
-        SELECT 
-            m.DataMeczu,
-            SUM(
-                CASE 
-                    WHEN g.DruzynaID != ? THEN 1
-                    ELSE 0
-                END
-            ) AS LostGoals
-        FROM Mecz m
-        LEFT JOIN Gol g ON g.MeczID = m.MeczID
-        WHERE m.DruzynaGospodarzID = ? OR m.DruzynaGoscID = ?
-        GROUP BY m.DataMeczu
-        ORDER BY m.DataMeczu
-    """, (team_id, team_id, team_id))
-
-    rows = cur.fetchall()
-    conn.close()
-
-    labels = [str(r[0]) for r in rows]
-    values = [r[1] for r in rows]
-
-    return {'labels': labels, 'values': values}
-
-
-
-
-# =========================
-#  MAIN
-# =========================
-
-if __name__ == "__main__":
-    app.run(debug=True)
