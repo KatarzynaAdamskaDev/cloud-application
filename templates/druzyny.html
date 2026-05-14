@@ -5,7 +5,14 @@
     <title>Drużyny – System Liga</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-
+<script>
+  const links = document.querySelectorAll('.nav-right a');
+  links.forEach(link => {
+    if (link.href === window.location.href) {
+      link.classList.add('active');
+    }
+  });
+</script>
 <body>
 
 <nav class="nav-main">
