@@ -3,40 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <title>Edytuj terminarz</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
-    <h1>Edytuj terminarz</h1>
 
-    <p>
-        <a href="{{ url_for('admin_terminarze') }}">Powrót do terminarzy</a>
-    </p>
+<nav class="nav-main">
+    <div class="nav-left">
+        <span class="logo">LIGA</span>
+    </div>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <p><strong>{{ message }}</strong></p>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+    <div class="nav-right">
+        <a href="{{ url_for('index') }}">Start</a>
+        <a href="{{ url_for('admin_panel') }}">Panel admina</a>
+        <a href="{{ url_for('admin_terminarze') }}">Terminarze</a>
+        <a href="{{ url_for('logout') }}">Wyloguj</a>
+    </div>
+</nav>
 
-    <form method="POST">
-        <p>
-            <label>Nazwa sezonu:</label><br>
+<div class="container">
+
+    <h2>Edytuj terminarz</h2>
+
+    <div class="card">
+        <form method="POST">
+            <label>Nazwa sezonu</label>
             <input type="text" name="nazwa_sezonu" value="{{ terminarz[1] }}" required>
-        </p>
 
-        <p>
-            <label>Data rozpoczęcia:</label><br>
+            <label>Data rozpoczęcia</label>
             <input type="date" name="data_rozpoczecia" value="{{ terminarz[2] }}" required>
-        </p>
 
-        <p>
-            <label>Data zakończenia:</label><br>
+            <label>Data zakończenia</label>
             <input type="date" name="data_zakonczenia" value="{{ terminarz[3] }}" required>
-        </p>
 
-        <p>
-            <label>Status:</label><br>
+            <label>Status</label>
             <select name="status" required>
                 <option value="planowany" {% if terminarz[4] == "planowany" %}selected{% endif %}>
                     planowany
@@ -48,9 +48,15 @@
                     zakończony
                 </option>
             </select>
-        </p>
 
-        <button type="submit">Zapisz zmiany</button>
-    </form>
+            <br><br>
+
+            <button class="btn" type="submit">Zapisz zmiany</button>
+            <a class="btn" href="{{ url_for('admin_terminarze') }}">Anuluj</a>
+        </form>
+    </div>
+
+</div>
+
 </body>
 </html>
