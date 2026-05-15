@@ -611,42 +611,19 @@ def mecze_list():
 @app.route("/mecz/<int:mecz_id>")
 def mecz_detail(mecz_id):
     conn = get_db_conn()
-    mecz = None
-    gole = []
 
     if not conn:
-        return "Brak połączenia z bazą", 500
+        return "Brak DB"
 
-    try:
-        cursor = conn.cursor()
+    cursor = conn.cursor()
 
-        # MECZ (to już działało wcześniej)
-        cursor.execute("""
-            SELECT m.MeczID, m.DataMeczu, d1.Nazwa, d2.Nazwa,
-                   m.WynikGospodarz, m.WynikGosc, m.StatusMeczu
-            FROM Mecz m
-            JOIN Druzyna d1 ON m.DruzynaGospodarzID = d1.DruzynaID
-            JOIN Druzyna d2 ON m.DruzynaGoscID = d2.DruzynaID
-            WHERE m.MeczID = ?
-        """, (mecz_id,))
-        mecz = cursor.fetchone()
+    cursor.execute("SELECT * FROM Mecz WHERE MeczID = ?", (mecz_id,))
+    mecz = cursor.fetchone()
 
-        # GOL – MINIMALNA wersja (bez kombinacji)
-        cursor.execute("""
-            SELECT g.Minuta, g.Typ, z.Imie, z.Nazwisko
-            FROM Gol g
-            JOIN Zawodnik z ON g.ZawodnikID = z.ZawodnikID
-            WHERE g.MeczID = ?
-        """, (mecz_id,))
-        gole = cursor.fetchall()
+    cursor.execute("SELECT * FROM Gol WHERE MeczID = ?", (mecz_id,))
+    gole = cursor.fetchall()
 
-    except Exception as e:
-        return f"BŁĄD SQL: {str(e)}", 500
-
-    finally:
-        conn.close()
-
-    return render_template("mecz.html", mecz=mecz, gole=gole)
+    return f"MECZ: {mecz} <br> GOLE: {gole}"
 
 
 @app.route("/strzelcy")
