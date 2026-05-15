@@ -1720,35 +1720,52 @@ def admin_gole():
                 cursor.execute("""
                     INSERT INTO Gol (MeczID, ZawodnikID, DruzynaID, Minuta, Typ)
                     VALUES (?, ?, ?, ?, ?)
-                """, (form_data["mecz_id"], form_data["zawodnik_id"], 
+                """, (form_data["mecz_id"], form_data["zawodnik_id"],
                       form_data["druzyna_id"], form_data["minuta"], form_data["typ"]))
                 conn.commit()
                 flash("Dodano gola.", "success")
         except Exception as e:
-            flash(f"Błąd przy dodawaniu: {e}", "danger")
+            flash(f"Błąd: {e}", "danger")
+        conn.close()
+        return redirect(url_for("admin_gole"))
 
-    # Pobieranie danych do tabeli (uproszczone JOINy)
-    cursor.execute("""
-        SELECT g.GolID, m.DataMeczu, d1.Nazwa, d2.Nazwa, z.Imie, z.Nazwisko, g.Minuta, g.Typ
-        FROM Gol g
-        JOIN Mecz m ON g.MeczID = m.MeczID
-        JOIN Druzyna d1 ON m.DruzynaGospodarzID = d1.DruzynaID
-        JOIN Druzyna d2 ON m.DruzynaGoscID = d2.DruzynaID
-        JOIN Zawodnik z ON g.ZawodnikID = z.ZawodnikID
-        ORDER BY m.DataMeczu DESC, g.Minuta
-    """)
-    raw_goals = cursor.fetchall()
-    
-    # Dane do selectów
-    cursor.execute("SELECT MeczID, DataMeczu FROM Mecz ORDER BY DataMeczu DESC")
-    matches = cursor.fetchall()
-    
-    cursor.execute("SELECT ZawodnikID, Imie, Nazwisko FROM Zawodnik ORDER BY Nazwisko")
-    players = cursor.fetchall()
+    goals = []
+    matches = []
+    players = []
 
-    conn.close()
-    # Zauważ: przekazujemy raw_goals zamiast goals, musimy też lekko skorygować admin_gole.html
-    return render_template("admin_gole.html", goals=raw_goals, matches=matches, players=players)
+    try:
+        cursor.execute("""
+            SELECT g.GolID, m.DataMeczu, d1.Nazwa, d2.Nazwa, z.Imie, z.Nazwisko, g.Minuta, g.Typ
+            FROM Gol g
+            JOIN Mecz m ON g.MeczID = m.MeczID
+            JOIN Druzyna d1 ON m.DruzynaGospodarzID = d1.DruzynaID
+            JOIN Druzyna d2 ON m.DruzynaGoscID = d2.DruzynaID
+            JOIN Zawodnik z ON g.ZawodnikID = z.ZawodnikID
+            ORDER BY m.DataMeczu DESC, g.Minuta
+        """)
+        goals = cursor.fetchall()
+
+        cursor.execute("""
+            SELECT m.MeczID, m.DataMeczu, d1.Nazwa, d2.Nazwa, m.WynikGospodarz, m.WynikGosc
+            FROM Mecz m
+            JOIN Druzyna d1 ON m.DruzynaGospodarzID = d1.DruzynaID
+            JOIN Druzyna d2 ON m.DruzynaGoscID = d2.DruzynaID
+            ORDER BY m.DataMeczu DESC
+        """)
+        matches = cursor.fetchall()
+
+        cursor.execute("""
+            SELECT z.ZawodnikID, z.Imie, z.Nazwisko, d.Nazwa
+            FROM Zawodnik z
+            JOIN Druzyna d ON z.DruzynaID = d.DruzynaID
+            ORDER BY d.Nazwa, z.Nazwisko
+        """)
+        players = cursor.fetchall()
+
+    finally:
+        conn.close()
+
+    return render_template("admin_gole.html", goals=goals, matches=matches, players=players)
 
 
 @app.route("/admin/gol/<int:gol_id>/delete")
