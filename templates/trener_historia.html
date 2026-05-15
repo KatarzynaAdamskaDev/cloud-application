@@ -40,7 +40,7 @@
 </nav>
 
 <div class="container">
-    <a class="btn" href="{{ url_for('trener_view') }}">← Raport skautingowy</a>
+    <a class="btn" href="{{ url_for('trener_view', team_id=request.view_args.get('team_id')) }}">← Raport skautingowy</a>
     <br><br>
 
     <h2>Historia spotkań drużyny: {{ team[0] if team else 'Nieznana' }}</h2>
