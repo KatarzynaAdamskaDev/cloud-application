@@ -613,47 +613,33 @@ def mecz_detail(mecz_id):
     conn = get_db_conn()
     mecz = None
     gole = []
-
     if not conn:
-        flash("Brak połączenia z bazą danych.", "danger")
-        return render_template("mecz.html", mecz=mecz, gole=gole)
+        return "Brak połączenia z bazą", 500
 
     try:
         cursor = conn.cursor()
-
+        
+        # 1. Pobieranie danych meczu (sprawdzone kolumny z Twojego SELECT)
         cursor.execute("""
-            SELECT
-                m.MeczID,
-                m.DataMeczu,
-                d1.Nazwa AS Gospodarz,
-                d2.Nazwa AS Gosc,
-                m.WynikGospodarz,
-                m.WynikGosc,
-                m.StatusMeczu
+            SELECT m.MeczID, m.DataMeczu, d1.Nazwa, d2.Nazwa, 
+                   m.WynikGospodarz, m.WynikGosc, m.StatusMeczu 
             FROM Mecz m
             JOIN Druzyna d1 ON m.DruzynaGospodarzID = d1.DruzynaID
             JOIN Druzyna d2 ON m.DruzynaGoscID = d2.DruzynaID
-            WHERE m.MeczID = ?
-        """, (mecz_id,))
+            WHERE m.MeczID = ?""", (mecz_id,))
         mecz = cursor.fetchone()
 
+        # 2. Pobieranie goli (sprawdzone kolumny z Twojego zdjęcia tabeli Gol)
         cursor.execute("""
-            SELECT
-                g.Minuta,
-                g.Typ,
-                z.Imie,
-                z.Nazwisko,
-                d.Nazwa
+            SELECT g.Minuta, g.Typ, z.Imie, z.Nazwisko
             FROM Gol g
             JOIN Zawodnik z ON g.ZawodnikID = z.ZawodnikID
-            JOIN Druzyna d ON z.DruzynaID = d.DruzynaID
             WHERE g.MeczID = ?
-            ORDER BY g.Minuta
-        """, (mecz_id,))
+            ORDER BY g.Minuta""", (mecz_id,))
         gole = cursor.fetchall()
-
+        
     except Exception as e:
-        return f"<pre>Błąd bazy danych: {e}</pre>"
+        return f"Blad SQL: {str(e)}", 500
     finally:
         conn.close()
 
