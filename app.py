@@ -651,6 +651,9 @@ def mecz_detail(mecz_id):
             ORDER BY g.Minuta
         """, (mecz_id,))
         gole = cursor.fetchall()
+
+    except Exception as e:
+        return f"<pre>Błąd bazy danych: {e}</pre>"
     finally:
         conn.close()
 
