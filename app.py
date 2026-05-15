@@ -636,7 +636,7 @@ def mecz_detail(mecz_id):
     gole = cursor.fetchall()
 
     conn.close()
-    return f"MECZ: {mecz} <br> GOLE: {gole}"
+    return render_template("mecz.html", mecz=mecz, gole=gole)
 
 
 @app.route("/strzelcy")
