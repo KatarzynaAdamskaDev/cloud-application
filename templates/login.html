@@ -27,11 +27,11 @@
         {% endif %}
 
         {% if session.get('rola') == 'Trener' %}
-            <a class="nav-highlight" href="{{ url_for('trener_select') }}">Panel trenera</a>
+            <a href="{{ url_for('trener_select') }}">Panel trenera</a>
         {% endif %}
 
         {% if session.get('rola') == 'Administrator' %}
-            <a class="nav-highlight" href="{{ url_for('admin_panel') }}">Panel admina</a>
+            <a href="{{ url_for('admin_panel') }}">Panel admina</a>
         {% endif %}
 
         {% if session.get('user_login') %}

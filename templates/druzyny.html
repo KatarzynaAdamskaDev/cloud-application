@@ -22,7 +22,7 @@
 
     <div class="nav-right">
          <a href="{{ url_for('index') }}">Start</a>
-        <a href="{{ url_for('druzyny_list') }}">Drużyny</a>
+        <a class="nav-highlight" href="{{ url_for('druzyny_list') }}">Drużyny</a>
         <a href="{{ url_for('zawodnicy_list') }}">Zawodnicy</a>
         <a href="{{ url_for('mecze_list') }}">Mecze</a>
         <a href="{{ url_for('strzelcy') }}">Strzelcy</a>
@@ -34,11 +34,11 @@
         {% endif %}
 
         {% if session.get('rola') in ['Trener'] %}
-            <a class="nav-highlight" href="{{ url_for('trener_select') }}">Panel trenera</a>
+            <a href="{{ url_for('trener_select') }}">Panel trenera</a>
         {% endif %}
 
         {% if session.get('rola') == 'Administrator' %}
-            <a class="nav-highlight" href="{{ url_for('admin_panel') }}">Panel admina</a>
+            <a href="{{ url_for('admin_panel') }}">Panel admina</a>
         {% endif %}
 
         {% if session.get('user_login') %}
