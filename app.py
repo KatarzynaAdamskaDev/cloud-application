@@ -609,8 +609,8 @@ def mecze_list():
 
 
 @app.route("/mecz/<int:mecz_id>")
-def mecz_detail(mecz_id):
-    return f"TEST OK {mecz_id}"
+def mecz_info(mecz_id): # <-- zmiana nazwy
+    return "NA PEWNO NOWY KOD"
 
 
 @app.route("/strzelcy")
