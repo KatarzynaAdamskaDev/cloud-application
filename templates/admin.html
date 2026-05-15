@@ -14,7 +14,7 @@
     </div>
 
     <div class="nav-right">
-         <a href="{{ url_for('index') }}">Start</a>
+        <a href="{{ url_for('index') }}">Start</a>
         <a href="{{ url_for('druzyny_list') }}">Drużyny</a>
         <a href="{{ url_for('zawodnicy_list') }}">Zawodnicy</a>
         <a href="{{ url_for('mecze_list') }}">Mecze</a>
@@ -32,6 +32,7 @@
 
         {% if session.get('rola') == 'Administrator' %}
             <a href="{{ url_for('admin_panel') }}">Panel admina</a>
+            <a href="{{ url_for('admin_terminarze') }}">Terminarze</a>
         {% endif %}
 
         {% if session.get('user_login') %}
@@ -41,6 +42,21 @@
 </nav>
 
 <div class="container">
+
+    <h2>Panel administratora</h2>
+
+    <div class="card">
+        <h3>Zarządzanie systemem</h3>
+
+        <p>
+            <a class="btn" href="{{ url_for('admin_druzyny') }}">Zarządzaj drużynami</a>
+            <a class="btn" href="{{ url_for('admin_zawodnicy') }}">Zarządzaj zawodnikami</a>
+            <a class="btn" href="{{ url_for('admin_mecze') }}">Zarządzaj meczami</a>
+            <a class="btn" href="{{ url_for('admin_gole') }}">Zarządzaj golami</a>
+            <a class="btn" href="{{ url_for('admin_terminarze') }}">Zarządzaj terminarzem</a>
+            <a class="btn" href="{{ url_for('admin_raport_spojnosc') }}">Raport spójności</a>
+        </p>
+    </div>
 
     <h2>Zarządzanie użytkownikami</h2>
 
@@ -66,6 +82,10 @@
                         <a class="btn" href="{{ url_for('promote', uid=user[0], role='Uzytkownik') }}">Użytkownik</a>
                         <a class="btn" href="{{ url_for('promote', uid=user[0], role='Administrator') }}">Administrator</a>
                     </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4">Brak użytkowników.</td>
                 </tr>
                 {% endfor %}
             </tbody>
