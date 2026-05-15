@@ -1699,104 +1699,19 @@ def admin_raport_spojnosc():
 @role_required("Administrator")
 def admin_gole():
     conn = get_db_conn()
-
     if not conn:
-        flash("Brak połączenia z bazą danych.", "danger")
-        return redirect(url_for("index"))
-
-    if request.method == "POST":
-        try:
-            cursor = conn.cursor()
-
-            form_data, error = validate_goal_form(
-                request.form.get("mecz_id"),
-                request.form.get("zawodnik_id"),
-                request.form.get("minuta"),
-                request.form.get("typ"),
-                cursor
-            )
-
-            if error:
-                flash(error, "danger")
-                return redirect(url_for("admin_gole"))
-
-            cursor.execute("""
-                INSERT INTO Gol (MeczID, ZawodnikID, DruzynaID, Minuta, Typ)
-                VALUES (?, ?, ?, ?, ?)
-            """, (
-                form_data["mecz_id"],
-                form_data["zawodnik_id"],
-                form_data["druzyna_id"],
-                form_data["minuta"],
-                form_data["typ"]
-            ))
-
-            conn.commit()
-            flash("Dodano gola.", "success")
-
-        except Exception as e:
-            flash(f"Błąd przy dodawaniu gola: {e}", "danger")
-
-    goals = []
-    matches = []
-    players = []
+        return "Błąd bazy"
 
     try:
         cursor = conn.cursor()
-
-        cursor.execute("""
-            SELECT
-                g.GolID,
-                g.MeczID,
-                m.DataMeczu,
-                d1.Nazwa AS Gospodarz,
-                d2.Nazwa AS Gosc,
-                z.Imie,
-                z.Nazwisko,
-                dg.Nazwa AS DruzynaGola,
-                g.Minuta,
-                g.Typ
-            FROM Gol g
-            JOIN Mecz m ON g.MeczID = m.MeczID
-            JOIN Druzyna d1 ON m.DruzynaGospodarzID = d1.DruzynaID
-            JOIN Druzyna d2 ON m.DruzynaGoscID = d2.DruzynaID
-            JOIN Zawodnik z ON g.ZawodnikID = z.ZawodnikID
-            JOIN Druzyna dg ON g.DruzynaID = dg.DruzynaID
-            ORDER BY m.DataMeczu DESC, g.Minuta
-        """)
-        goals = cursor.fetchall()
-
-        cursor.execute("""
-            SELECT
-                m.MeczID,
-                m.DataMeczu,
-                d1.Nazwa AS Gospodarz,
-                d2.Nazwa AS Gosc,
-                m.WynikGospodarz,
-                m.WynikGosc
-            FROM Mecz m
-            JOIN Druzyna d1 ON m.DruzynaGospodarzID = d1.DruzynaID
-            JOIN Druzyna d2 ON m.DruzynaGoscID = d2.DruzynaID
-            ORDER BY m.DataMeczu DESC
-        """)
-        matches = cursor.fetchall()
-
-        cursor.execute("""
-            SELECT
-                z.ZawodnikID,
-                z.Imie,
-                z.Nazwisko,
-                d.Nazwa AS Druzyna
-            FROM Zawodnik z
-            JOIN Druzyna d ON z.DruzynaID = d.DruzynaID
-            ORDER BY d.Nazwa, z.Nazwisko, z.Imie
-        """)
-        players = cursor.fetchall()
-
+        # Test zapytania o same gole - czy tabela 'Gol' istnieje i ma te kolumny?
+        cursor.execute("SELECT TOP 5 GolID, Minuta FROM Gol")
+        test_gole = cursor.fetchall()
+        return f"Działa! Pobrało {len(test_gole)} goli."
+    except Exception as e:
+        return f"BŁĄD SQL: {e}"
     finally:
         conn.close()
-
-    return render_template("admin_gole.html", goals=goals, matches=matches, players=players)
 
 
 @app.route("/admin/gol/<int:gol_id>/delete")
