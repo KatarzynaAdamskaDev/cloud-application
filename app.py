@@ -610,20 +610,9 @@ def mecze_list():
 
 @app.route("/mecz/<int:mecz_id>")
 def mecz_detail(mecz_id):
-    conn = get_db_conn()
-
-    if not conn:
-        return "Brak DB"
-
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT * FROM Mecz WHERE MeczID = ?", (mecz_id,))
-    mecz = cursor.fetchone()
-
-    cursor.execute("SELECT * FROM Gol WHERE MeczID = ?", (mecz_id,))
-    gole = cursor.fetchall()
-
-    return f"MECZ: {mecz} <br> GOLE: {gole}"
+    import pyodbc
+    drivers = [d for d in pyodbc.drivers()]
+    return f"Dostępne drivery na Azure: {drivers}"
 
 
 @app.route("/strzelcy")
