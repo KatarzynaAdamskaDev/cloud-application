@@ -337,9 +337,10 @@ def validate_goal_form(mecz_id, zawodnik_id, minuta, typ, cursor):
 
     cursor.execute("""
         SELECT COUNT(*)
-        FROM Gol
-        WHERE MeczID = ?
-          AND DruzynaID = ?
+        FROM Gol g
+        JOIN Zawodnik z ON g.ZawodnikID = z.ZawodnikID
+        WHERE g.MeczID = ?
+        AND z.DruzynaID = ?
     """, (mecz_id_int, druzyna_zawodnika))
     obecne_gole = cursor.fetchone()[0]
 
@@ -1664,17 +1665,19 @@ def admin_raport_spojnosc():
                 m.WynikGospodarz,
                 m.WynikGosc,
                 ISNULL((
-                    SELECT COUNT(*)
-                    FROM Gol g
-                    WHERE g.MeczID = m.MeczID
-                      AND g.DruzynaID = m.DruzynaGospodarzID
-                ), 0) AS GoleGospodarza,
-                ISNULL((
-                    SELECT COUNT(*)
-                    FROM Gol g
-                    WHERE g.MeczID = m.MeczID
-                      AND g.DruzynaID = m.DruzynaGoscID
-                ), 0) AS GoleGoscia
+                SELECT COUNT(*)
+                FROM Gol g
+                JOIN Zawodnik z ON g.ZawodnikID = z.ZawodnikID
+                WHERE g.MeczID = m.MeczID
+                AND z.DruzynaID = m.DruzynaGospodarzID
+            ), 0) AS GoleGospodarza,
+            ISNULL((
+                SELECT COUNT(*)
+                FROM Gol g
+                JOIN Zawodnik z ON g.ZawodnikID = z.ZawodnikID
+                WHERE g.MeczID = m.MeczID
+                AND z.DruzynaID = m.DruzynaGoscID
+            ), 0) AS GoleGoscia
             FROM Mecz m
             JOIN Druzyna d1 ON m.DruzynaGospodarzID = d1.DruzynaID
             JOIN Druzyna d2 ON m.DruzynaGoscID = d2.DruzynaID
@@ -1718,10 +1721,9 @@ def admin_gole():
                 flash(error, "danger")
             else:
                 cursor.execute("""
-                    INSERT INTO Gol (MeczID, ZawodnikID, DruzynaID, Minuta, Typ)
-                    VALUES (?, ?, ?, ?, ?)
-                """, (form_data["mecz_id"], form_data["zawodnik_id"],
-                      form_data["druzyna_id"], form_data["minuta"], form_data["typ"]))
+                INSERT INTO Gol (MeczID, ZawodnikID, Minuta, Typ)
+                VALUES (?, ?, ?, ?)
+            """, (form_data["mecz_id"], form_data["zawodnik_id"], form_data["minuta"], form_data["typ"]))
                 conn.commit()
                 flash("Dodano gola.", "success")
         except Exception as e:
