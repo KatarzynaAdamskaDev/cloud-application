@@ -1700,18 +1700,55 @@ def admin_raport_spojnosc():
 def admin_gole():
     conn = get_db_conn()
     if not conn:
-        return "Błąd bazy"
+        flash("Brak połączenia z bazą danych.", "danger")
+        return redirect(url_for("index"))
 
-    try:
-        cursor = conn.cursor()
-        # Test zapytania o same gole - czy tabela 'Gol' istnieje i ma te kolumny?
-        cursor.execute("SELECT TOP 5 GolID, Minuta FROM Gol")
-        test_gole = cursor.fetchall()
-        return f"Działa! Pobrało {len(test_gole)} goli."
-    except Exception as e:
-        return f"BŁĄD SQL: {e}"
-    finally:
-        conn.close()
+    cursor = conn.cursor()
+
+    if request.method == "POST":
+        try:
+            form_data, error = validate_goal_form(
+                request.form.get("mecz_id"),
+                request.form.get("zawodnik_id"),
+                request.form.get("minuta"),
+                request.form.get("typ"),
+                cursor
+            )
+            if error:
+                flash(error, "danger")
+            else:
+                cursor.execute("""
+                    INSERT INTO Gol (MeczID, ZawodnikID, DruzynaID, Minuta, Typ)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (form_data["mecz_id"], form_data["zawodnik_id"], 
+                      form_data["druzyna_id"], form_data["minuta"], form_data["typ"]))
+                conn.commit()
+                flash("Dodano gola.", "success")
+        except Exception as e:
+            flash(f"Błąd przy dodawaniu: {e}", "danger")
+
+    # Pobieranie danych do tabeli (uproszczone JOINy)
+    cursor.execute("""
+        SELECT g.GolID, m.DataMeczu, d1.Nazwa, d2.Nazwa, z.Imie, z.Nazwisko, g.Minuta, g.Typ
+        FROM Gol g
+        JOIN Mecz m ON g.MeczID = m.MeczID
+        JOIN Druzyna d1 ON m.DruzynaGospodarzID = d1.DruzynaID
+        JOIN Druzyna d2 ON m.DruzynaGoscID = d2.DruzynaID
+        JOIN Zawodnik z ON g.ZawodnikID = z.ZawodnikID
+        ORDER BY m.DataMeczu DESC, g.Minuta
+    """)
+    raw_goals = cursor.fetchall()
+    
+    # Dane do selectów
+    cursor.execute("SELECT MeczID, DataMeczu FROM Mecz ORDER BY DataMeczu DESC")
+    matches = cursor.fetchall()
+    
+    cursor.execute("SELECT ZawodnikID, Imie, Nazwisko FROM Zawodnik ORDER BY Nazwisko")
+    players = cursor.fetchall()
+
+    conn.close()
+    # Zauważ: przekazujemy raw_goals zamiast goals, musimy też lekko skorygować admin_gole.html
+    return render_template("admin_gole.html", goals=raw_goals, matches=matches, players=players)
 
 
 @app.route("/admin/gol/<int:gol_id>/delete")

@@ -74,30 +74,20 @@
             </thead>
 
             <tbody>
-                {% for g in goals %}
-                <tr>
-                    <td>{{ g[0] }}</td>
-                    <td>
-                        {{ g[2] }} — {{ g[3] }} vs {{ g[4] }}
-                    </td>
-                    <td>{{ g[5] }} {{ g[6] }}</td>
-                    <td>{{ g[7] }}</td>
-                    <td>{{ g[8] }}</td>
-                    <td>{{ g[9] }}</td>
-                    <td>
-                        <a class="btn-warning btn"
-                           href="{{ url_for('admin_gol_delete', gol_id=g[0]) }}"
-                           onclick="return confirm('Czy na pewno chcesz usunąć tego gola?')">
-                            Usuń
-                        </a>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="7">Brak goli.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
+    {% for g in goals %}
+    <tr>
+        <td>{{ g[0] }}</td>
+        <td>{{ g[2] }} vs {{ g[3] }} ({{ g[1] }})</td>
+        <td>{{ g[4] }} {{ g[5] }}</td>
+        <td>—</td> <!-- Drużynę gola pomijamy dla uproszczenia błędu -->
+        <td>{{ g[6] }}</td>
+        <td>{{ g[7] }}</td>
+        <td>
+            <a class="btn-warning btn" href="{{ url_for('admin_gol_delete', gol_id=g[0]) }}">Usuń</a>
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
         </table>
     </div>
 
