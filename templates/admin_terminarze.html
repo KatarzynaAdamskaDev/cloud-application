@@ -2,75 +2,78 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Panel administratora – terminarze</title>
+    <title>Admin – Terminarze</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
-    <h1>Panel administratora – terminarze rozgrywek</h1>
 
-    <p>
-        <a href="{{ url_for('admin_panel') }}">Powrót do panelu administratora</a>
-    </p>
+<nav class="nav-main">
+    <div class="nav-left">
+        <span class="logo">LIGA</span>
+    </div>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <p><strong>{{ message }}</strong></p>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+    <div class="nav-right">
+        <a href="{{ url_for('index') }}">Start</a>
+        <a href="{{ url_for('terminarz') }}">Publiczny terminarz</a>
+        <a href="{{ url_for('admin_panel') }}">Panel admina</a>
+        <a href="{{ url_for('logout') }}">Wyloguj</a>
+    </div>
+</nav>
 
-    <h2>Dodaj terminarz / sezon</h2>
+<div class="container">
 
-    <form method="POST">
-        <p>
-            <label>Nazwa sezonu:</label><br>
-            <input type="text" name="nazwa_sezonu" required placeholder="np. Sezon 2025/2026">
-        </p>
+    <h2>Zarządzanie terminarzami rozgrywek</h2>
 
-        <p>
-            <label>Data rozpoczęcia:</label><br>
+    <div class="card">
+        <h3>Dodaj terminarz / sezon</h3>
+
+        <form method="POST">
+            <label>Nazwa sezonu</label>
+            <input type="text" name="nazwa_sezonu" placeholder="np. Sezon 2025/2026" required>
+
+            <label>Data rozpoczęcia</label>
             <input type="date" name="data_rozpoczecia" required>
-        </p>
 
-        <p>
-            <label>Data zakończenia:</label><br>
+            <label>Data zakończenia</label>
             <input type="date" name="data_zakonczenia" required>
-        </p>
 
-        <p>
-            <label>Status:</label><br>
+            <label>Status</label>
             <select name="status" required>
                 <option value="planowany">planowany</option>
                 <option value="aktywny">aktywny</option>
                 <option value="zakończony">zakończony</option>
             </select>
-        </p>
 
-        <button type="submit">Dodaj terminarz</button>
-    </form>
+            <br><br>
+            <button class="btn" type="submit">Dodaj terminarz</button>
+        </form>
+    </div>
 
-    <h2>Lista terminarzy</h2>
+    <div class="card">
+        <h3>Lista terminarzy</h3>
 
-    <table border="1" cellpadding="8" cellspacing="0">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nazwa sezonu</th>
-                <th>Data rozpoczęcia</th>
-                <th>Data zakończenia</th>
-                <th>Status</th>
-                <th>Czy zakończony?</th>
-                <th>Akcje</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for t in terminarze %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nazwa sezonu</th>
+                    <th>Data rozpoczęcia</th>
+                    <th>Data zakończenia</th>
+                    <th>Status</th>
+                    <th>Czy zakończony?</th>
+                    <th>Akcje</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for t in terminarze %}
                 <tr>
                     <td>{{ t[0] }}</td>
                     <td>{{ t[1] }}</td>
                     <td>{{ t[2] }}</td>
                     <td>{{ t[3] }}</td>
-                    <td>{{ t[4] }}</td>
+                    <td><b>{{ t[4] }}</b></td>
                     <td>
                         {% if t[5] == 1 %}
                             Tak
@@ -79,20 +82,27 @@
                         {% endif %}
                     </td>
                     <td>
-                        <a href="{{ url_for('admin_terminarz_edit', terminarz_id=t[0]) }}">Edytuj</a>
-                        |
-                        <a href="{{ url_for('admin_terminarz_delete', terminarz_id=t[0]) }}"
+                        <a class="btn" href="{{ url_for('admin_terminarz_edit', terminarz_id=t[0]) }}">
+                            Edytuj
+                        </a>
+
+                        <a class="btn-warning btn"
+                           href="{{ url_for('admin_terminarz_delete', terminarz_id=t[0]) }}"
                            onclick="return confirm('Czy na pewno chcesz usunąć ten terminarz?')">
                             Usuń
                         </a>
                     </td>
                 </tr>
-            {% else %}
+                {% else %}
                 <tr>
-                    <td colspan="7">Brak terminarzy w bazie.</td>
+                    <td colspan="7">Brak terminarzy.</td>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
 </body>
 </html>
