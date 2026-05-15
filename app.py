@@ -646,12 +646,11 @@ def mecz_detail(mecz_id):
                 d.Nazwa
             FROM Gol g
             JOIN Zawodnik z ON g.ZawodnikID = z.ZawodnikID
-            JOIN Druzyna d ON g.DruzynaID = d.DruzynaID
+            JOIN Druzyna d ON z.DruzynaID = d.DruzynaID
             WHERE g.MeczID = ?
             ORDER BY g.Minuta
         """, (mecz_id,))
         gole = cursor.fetchall()
-
     finally:
         conn.close()
 
