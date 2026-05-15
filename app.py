@@ -641,7 +641,6 @@ def mecz_detail(mecz_id):
 
 
 @app.route("/strzelcy")
-@role_required("Trener", "Administrator")
 def strzelcy():
     conn = get_db_conn()
     rows = []
