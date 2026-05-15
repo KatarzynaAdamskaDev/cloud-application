@@ -8,9 +8,36 @@
 
 <body>
 
-<div class="nav-left">
-    <span style="color:white;font-weight:bold;font-size:1.2rem;">LIGA</span>
-</div>
+<nav class="nav-main">
+    <div class="nav-left">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="System Liga" class="nav-logo">
+    </div>
+
+    <div class="nav-right">
+        <a href="{{ url_for('index') }}">Start</a>
+        <a href="{{ url_for('druzyny_list') }}">Drużyny</a>
+        <a href="{{ url_for('zawodnicy_list') }}">Zawodnicy</a>
+        <a href="{{ url_for('mecze_list') }}">Mecze</a>
+        <a href="{{ url_for('strzelcy') }}">Strzelcy</a>
+        <a href="{{ url_for('tabela_ligowa') }}">Tabela</a>
+        <a href="{{ url_for('terminarz') }}">Terminarz</a>
+        {% if not session.get('user_login') %}
+            <a href="{{ url_for('login') }}">Logowanie</a>
+        {% endif %}
+
+        {% if session.get('rola') == 'Trener' %}
+            <a href="{{ url_for('trener_select') }}">Panel trenera</a>
+        {% endif %}
+
+        {% if session.get('rola') == 'Administrator' %}
+            <a class="nav-highlight" href="{{ url_for('admin_panel') }}">Panel admina</a>
+        {% endif %}
+
+        {% if session.get('user_login') %}
+            <a href="{{ url_for('logout') }}">Wyloguj</a>
+        {% endif %}
+    </div>
+</nav>
 
 <div class="container">
 
@@ -79,7 +106,7 @@
         <td>{{ g[0] }}</td>
         <td>{{ g[2] }} vs {{ g[3] }} ({{ g[1] }})</td>
         <td>{{ g[4] }} {{ g[5] }}</td>
-        <td>—</td> <!-- Drużynę gola pomijamy dla uproszczenia błędu -->
+        <td>—</td>
         <td>{{ g[6] }}</td>
         <td>{{ g[7] }}</td>
         <td>
