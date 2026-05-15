@@ -17,7 +17,7 @@
         <a href="{{ url_for('index') }}">Start</a>
         <a href="{{ url_for('druzyny_list') }}">Drużyny</a>
         <a href="{{ url_for('zawodnicy_list') }}">Zawodnicy</a>
-        <a class="nav-highlight" href="{{ url_for('mecze_list') }}">Mecze</a>
+        <a href="{{ url_for('mecze_list') }}">Mecze</a>
         <a href="{{ url_for('strzelcy') }}">Strzelcy</a>
         <a href="{{ url_for('tabela_ligowa') }}">Tabela</a>
         <a href="{{ url_for('terminarz') }}">Terminarz</a>
@@ -30,7 +30,7 @@
         {% endif %}
 
         {% if session.get('rola') == 'Administrator' %}
-            <a href="{{ url_for('admin_panel') }}">Panel admina</a>
+            <a class="nav-highlight" href="{{ url_for('admin_panel') }}">Panel admina</a>
         {% endif %}
 
         {% if session.get('user_login') %}
