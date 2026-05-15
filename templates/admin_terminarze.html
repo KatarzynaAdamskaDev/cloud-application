@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel administratora – terminarze</title>
+</head>
+<body>
+    <h1>Panel administratora – terminarze rozgrywek</h1>
+
+    <p>
+        <a href="{{ url_for('admin_panel') }}">Powrót do panelu administratora</a>
+    </p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <p><strong>{{ message }}</strong></p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <h2>Dodaj terminarz / sezon</h2>
+
+    <form method="POST">
+        <p>
+            <label>Nazwa sezonu:</label><br>
+            <input type="text" name="nazwa_sezonu" required placeholder="np. Sezon 2025/2026">
+        </p>
+
+        <p>
+            <label>Data rozpoczęcia:</label><br>
+            <input type="date" name="data_rozpoczecia" required>
+        </p>
+
+        <p>
+            <label>Data zakończenia:</label><br>
+            <input type="date" name="data_zakonczenia" required>
+        </p>
+
+        <p>
+            <label>Status:</label><br>
+            <select name="status" required>
+                <option value="planowany">planowany</option>
+                <option value="aktywny">aktywny</option>
+                <option value="zakończony">zakończony</option>
+            </select>
+        </p>
+
+        <button type="submit">Dodaj terminarz</button>
+    </form>
+
+    <h2>Lista terminarzy</h2>
+
+    <table border="1" cellpadding="8" cellspacing="0">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nazwa sezonu</th>
+                <th>Data rozpoczęcia</th>
+                <th>Data zakończenia</th>
+                <th>Status</th>
+                <th>Czy zakończony?</th>
+                <th>Akcje</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in terminarze %}
+                <tr>
+                    <td>{{ t[0] }}</td>
+                    <td>{{ t[1] }}</td>
+                    <td>{{ t[2] }}</td>
+                    <td>{{ t[3] }}</td>
+                    <td>{{ t[4] }}</td>
+                    <td>
+                        {% if t[5] == 1 %}
+                            Tak
+                        {% else %}
+                            Nie
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('admin_terminarz_edit', terminarz_id=t[0]) }}">Edytuj</a>
+                        |
+                        <a href="{{ url_for('admin_terminarz_delete', terminarz_id=t[0]) }}"
+                           onclick="return confirm('Czy na pewno chcesz usunąć ten terminarz?')">
+                            Usuń
+                        </a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7">Brak terminarzy w bazie.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
