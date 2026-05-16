@@ -101,8 +101,8 @@
         <div class="card">
             <h3>Lider rozgrywek</h3>
             {% if data.team %}
-                <p><b>{{ data.team[0] }}</b></p>
-                <p>Punkty: <b>{{ data.team[1] }}</b></p>
+                <p><b>{{ data.team.nazwa }}</b></p>
+                <p>Punkty: <b>{{ data.team.punkty }}</b></p>
             {% else %}
                 <p>Brak danych.</p>
             {% endif %}
