@@ -58,7 +58,6 @@
             <h3>Następny mecz</h3>
 
             {% if data.season %}
-            <div class="match-box">
                 <p><b>Sezon:</b> {{ data.season[0] }}</p>
                 <p><b>Status:</b> {{ data.season[1] }}</p>
             {% endif %}
@@ -66,7 +65,6 @@
             {% if data.next_match %}
                     <p><b>{{ data.next_match[1] }}</b> vs <b>{{ data.next_match[2] }}</b></p>
                     <p>{{ data.next_match[0] }}</p>
-                </div>
             {% else %}
                 <p>Brak zaplanowanych meczów w systemie.</p>
             {% endif %}
@@ -76,13 +74,11 @@
             <h3>Ostatni mecz</h3>
 
             {% if data.last_match %}
-                <div class="match-box">
                     <p><b>{{ data.last_match[1] }}</b> 
                         {% if data.last_match[3] is not none %}{{ data.last_match[3] }}{% else %}-{% endif %} : 
                         {% if data.last_match[4] is not none %}{{ data.last_match[4] }}{% else %}-{% endif %} 
                     <b>{{ data.last_match[2] }}</b></p>
                     <p>{{ data.last_match[0] }}</p>
-                </div>
             {% else %}
                 <p>Brak rozegranych meczów w systemie.</p>
             {% endif %}
@@ -96,10 +92,8 @@
         <div class="card">
             <h3>Lider rozgrywek</h3>
             {% if data.team %}
-            <div class="match-box">
                 <p><b>{{ data.team.nazwa }}</b></p>
                 <p>Punkty: <b>{{ data.team.punkty }}</b></p>
-            </div>
             {% else %}
                 <p>Brak danych.</p>
             {% endif %}
@@ -108,11 +102,9 @@
         <div class="card">
             <h3>Najlepszy zawodnik</h3>
             {% if data.player %}
-             <div class="match-box">
                 <p><b>{{ data.player.nazwa }}</b></p>
                 <p>Gole: <b>{{ data.player.gole }}</b></p>
                 <p>Asysty: <b>{{ data.player.asysty }}</b></p>
-            </div>
             {% else %}
                  <p>Brak danych.</p>
             {% endif %}
