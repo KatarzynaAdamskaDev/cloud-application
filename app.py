@@ -238,6 +238,10 @@ def validate_match_form(gosp, gosc, data, wynik_g, wynik_gosc, status_meczu, ter
 
     if not data:
         return None, "Data meczu jest wymagana."
+    
+    data_sql = data.replace("T", " ")
+    if len(data_sql) == 16:  # Oznacza brak sekund: YYYY-MM-DD HH:MM
+        data_sql += ":00"
 
     if status_meczu not in ["planowany", "w trakcie", "zakończony"]:
         return None, "Niepoprawny status meczu."
