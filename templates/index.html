@@ -66,9 +66,9 @@
                 <div class="match-box">
                     <p><b>{{ data.next_match[1] }}</b> vs <b>{{ data.next_match[2] }}</b></p>
                     <p>{{ data.next_match[0] }}</p>
-                </div>
             {% else %}
                 <p>Brak zaplanowanych meczów w systemie.</p>
+                </div>
             {% endif %}
         </div>
 
@@ -96,21 +96,25 @@
         <div class="card">
             <h3>Lider rozgrywek</h3>
             {% if data.team %}
+            <div class="match-box">
                 <p><b>{{ data.team.nazwa }}</b></p>
                 <p>Punkty: <b>{{ data.team.punkty }}</b></p>
             {% else %}
                 <p>Brak danych.</p>
+            </div>
             {% endif %}
         </div>
 
         <div class="card">
             <h3>Najlepszy zawodnik</h3>
             {% if data.player %}
+            <div class="match-box">
                 <p><b>{{ data.player.nazwa }}</b></p>
                 <p>Gole: <b>{{ data.player.gole }}</b></p>
                 <p>Asysty: <b>{{ data.player.asysty }}</b></p>
             {% else %}
                  <p>Brak danych.</p>
+                 </div>
             {% endif %}
         </div>
 
