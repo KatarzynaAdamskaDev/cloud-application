@@ -66,7 +66,7 @@
             </select>
 
             <label>Data meczu</label>
-            <input type="time" name="data" value="{{ mecz[5] }}" required>
+            <input type="date" name="data" value="{{ mecz[5] }}" required>
 
             <label>Wynik gospodarza</label>
             <input type="number" name="wynik_g" min="0" value="{{ mecz[3] if mecz[3] is not none else '' }}">
