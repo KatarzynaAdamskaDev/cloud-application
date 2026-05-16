@@ -723,7 +723,7 @@ def terminarz():
                 JOIN Druzyna d1 ON m.DruzynaGospodarzID = d1.DruzynaID
                 JOIN Druzyna d2 ON m.DruzynaGoscID = d2.DruzynaID
                 WHERE m.TerminarzID = ?
-                ORDER BY m.DataMeczu
+                ORDER BY m.DataMeczu DESC
             """, (sezon[0],))
             mecze = cursor.fetchall()
 
