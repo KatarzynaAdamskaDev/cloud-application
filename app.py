@@ -431,7 +431,7 @@ def index():
             FROM Mecz m
             JOIN Druzyna d1 ON m.DruzynaGospodarzID = d1.DruzynaID
             JOIN Druzyna d2 ON m.DruzynaGoscID = d2.DruzynaID
-            ORDER BY m.DataMeczu ASC
+            ORDER BY m.DataMeczu DESC
         """)
         matches = cursor.fetchall()
 
