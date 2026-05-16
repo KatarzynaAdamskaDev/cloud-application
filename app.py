@@ -280,7 +280,7 @@ def validate_match_form(gosp, gosc, data, wynik_g, wynik_gosc, status_meczu, ter
     return {
         "gosp_id": gosp_id,
         "gosc_id": gosc_id,
-        "data": data,
+        "data": data_sql,
         "wynik_g": wynik_g_int,
         "wynik_gosc": wynik_gosc_int,
         "status_meczu": status_meczu,
