@@ -52,7 +52,7 @@
             <label>Mecz</label>
             <select name="mecz_id" required>
                 {% for m in matches %}
-                    <option value="{{ m[0] }}">
+                    <option value="{{ loop.index }}">
                         {{ m[1] }} — {{ m[2] }} vs {{ m[3] }}
                         {% if m[4] is not none and m[5] is not none %}
                             ({{ m[4] }}:{{ m[5] }})

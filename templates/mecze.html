@@ -61,7 +61,7 @@
             <tbody>
                 {% for m in matches %}
                 <tr>
-                    <td>{{ m[0] }}</td>
+                    <td>{{ loop.index }}</td>
                     <td>{{ m[1] }}</td>
                     <td>{{ m[2] }}</td>
                     <td><b>{{ m[4] }} : {{ m[5] }}</b></td>
