@@ -422,18 +422,43 @@ def index():
         sezon = cursor.fetchone()
 
         cursor.execute("""
-            SELECT
-                m.DataMeczu,
-                d1.Nazwa AS Gospodarz,
-                d2.Nazwa AS Gosc,
-                m.WynikGospodarz,
-                m.WynikGosc
+            SELECT TOP 1 NazwaSezonu, Status
+            FROM TerminarzRozgrywek
+            ORDER BY DataRozpoczecia DESC
+        """)
+        sezon = cursor.fetchone()
+
+        cursor.execute("""
+            SELECT TOP 1
+                m.DataMeczu, d1.Nazwa AS Gospodarz, d2.Nazwa AS Gosc, m.WynikGospodarz, m.WynikGosc
+            FROM Mecz m
+            JOIN Druzyna d1 ON m.DruzynaGospodarzID = d1.DruzynaID
+            JOIN Druzyna d2 ON m.DruzynaGoscID = d2.DruzynaID
+            WHERE m.StatusMeczu = 'planowany'
+            ORDER BY m.DataMeczu ASC
+        """)
+        next_match = cursor.fetchone()
+
+        cursor.execute("""
+            SELECT TOP 1
+                m.DataMeczu, d1.Nazwa AS Gospodarz, d2.Nazwa AS Gosc, m.WynikGospodarz, m.WynikGosc
+            FROM Mecz m
+            JOIN Druzyna d1 ON m.DruzynaGospodarzID = d1.DruzynaID
+            JOIN Druzyna d2 ON m.DruzynaGoscID = d2.DruzynaID
+            WHERE ISNULL(m.StatusMeczu, 'zakończony') = 'zakończony'
+            ORDER BY m.DataMeczu DESC
+        """)
+        last_match = cursor.fetchone()
+
+        cursor.execute("""
+            SELECT TOP 10
+                m.DataMeczu, d1.Nazwa AS Gospodarz, d2.Nazwa AS Gosc, m.WynikGospodarz, m.WynikGosc
             FROM Mecz m
             JOIN Druzyna d1 ON m.DruzynaGospodarzID = d1.DruzynaID
             JOIN Druzyna d2 ON m.DruzynaGoscID = d2.DruzynaID
             ORDER BY m.DataMeczu DESC
         """)
-        matches = cursor.fetchall()
+        recent_matches = cursor.fetchall()
 
         cursor.execute("SELECT DruzynaID, Nazwa FROM Druzyna ORDER BY Nazwa")
         teams = cursor.fetchall()
@@ -445,12 +470,13 @@ def index():
         "team": lider,
         "player": best_player,
         "season": sezon,
-        "matches": matches,
+        "next_match": next_match,
+        "last_match": last_match,
+        "recent_matches": recent_matches,
         "teams": teams
     }
 
     return render_template("index.html", data=data)
-
 
 @app.route("/druzyny")
 def druzyny_list():
