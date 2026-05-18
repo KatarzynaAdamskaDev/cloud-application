@@ -102,11 +102,17 @@ def test_policz_tabele_z_meczow_with_tiebreakers():
 
     tabela = liga_app.policz_tabele_z_meczow(cursor)
 
-    assert tabela[0]["nazwa"] == "Beta"
-    assert tabela[0]["punkty"] == 3
-    assert tabela[0]["bilans"] == 1
-    assert tabela[1]["nazwa"] == "Alpha"
+    assert tabela[0]["nazwa"] == "Alpha"
+    assert tabela[0]["punkty"] == 4
+    assert tabela[0]["bilans"] == 2
+
+    assert tabela[1]["nazwa"] == "Beta"
+    assert tabela[1]["punkty"] == 3
+    assert tabela[1]["bilans"] == 1
+
     assert tabela[2]["nazwa"] == "Gamma"
+    assert tabela[2]["punkty"] == 1
+    assert tabela[2]["bilans"] == -3
 
 
 def test_validate_match_form_rejects_same_team():
@@ -200,6 +206,48 @@ def test_validate_match_form_accepts_valid_finished_match():
     assert data["gosc_id"] == 2
     assert data["wynik_g"] == 1
     assert data["wynik_gosc"] == 0
+    assert data["status_meczu"] == "zakończony"
+    assert data["terminarz_id"] == 1
+
+
+def test_validate_match_form_accepts_planned_match_without_score():
+    cursor = FakeCursor(fetchone_results=[FakeRow("aktywny")])
+
+    data, error = liga_app.validate_match_form(
+        gosp="1",
+        gosc="2",
+        data="2025-09-01",
+        wynik_g="",
+        wynik_gosc="",
+        status_meczu="planowany",
+        terminarz_id="1",
+        cursor=cursor
+    )
+
+    assert error is None
+    assert data["gosp_id"] == 1
+    assert data["gosc_id"] == 2
+    assert data["wynik_g"] is None
+    assert data["wynik_gosc"] is None
+    assert data["status_meczu"] == "planowany"
+
+
+def test_validate_match_form_rejects_invalid_status():
+    cursor = FakeCursor()
+
+    data, error = liga_app.validate_match_form(
+        gosp="1",
+        gosc="2",
+        data="2025-09-01",
+        wynik_g="1",
+        wynik_gosc="0",
+        status_meczu="zly-status",
+        terminarz_id="1",
+        cursor=cursor
+    )
+
+    assert data is None
+    assert "Niepoprawny status meczu" in error
 
 
 def test_validate_goal_form_rejects_invalid_minute():
@@ -232,6 +280,26 @@ def test_validate_goal_form_rejects_missing_match():
     assert "mecz nie istnieje" in error
 
 
+def test_validate_goal_form_rejects_missing_player():
+    cursor = FakeCursor(
+        fetchone_results=[
+            FakeRow(1, 10, 20, 2, 1),
+            None
+        ]
+    )
+
+    data, error = liga_app.validate_goal_form(
+        mecz_id="1",
+        zawodnik_id="999",
+        minuta="10",
+        typ="normalny",
+        cursor=cursor
+    )
+
+    assert data is None
+    assert "zawodnik nie istnieje" in error
+
+
 def test_validate_goal_form_rejects_player_from_other_team():
     cursor = FakeCursor(
         fetchone_results=[
@@ -250,6 +318,26 @@ def test_validate_goal_form_rejects_player_from_other_team():
 
     assert data is None
     assert "nie należy" in error
+
+
+def test_validate_goal_form_rejects_goal_without_match_score():
+    cursor = FakeCursor(
+        fetchone_results=[
+            FakeRow(1, 10, 20, None, None),
+            FakeRow(5, 10)
+        ]
+    )
+
+    data, error = liga_app.validate_goal_form(
+        mecz_id="1",
+        zawodnik_id="5",
+        minuta="10",
+        typ="normalny",
+        cursor=cursor
+    )
+
+    assert data is None
+    assert "bez zapisanego wyniku" in error
 
 
 def test_validate_goal_form_rejects_goal_exceeding_score():
@@ -295,3 +383,25 @@ def test_validate_goal_form_accepts_valid_goal():
     assert data["zawodnik_id"] == 5
     assert data["druzyna_id"] == 10
     assert data["minuta"] == 70
+    assert data["typ"] == "normalny"
+
+
+def test_validate_goal_form_sets_default_goal_type():
+    cursor = FakeCursor(
+        fetchone_results=[
+            FakeRow(1, 10, 20, 2, 1),
+            FakeRow(5, 10),
+            FakeRow(0)
+        ]
+    )
+
+    data, error = liga_app.validate_goal_form(
+        mecz_id="1",
+        zawodnik_id="5",
+        minuta="15",
+        typ="",
+        cursor=cursor
+    )
+
+    assert error is None
+    assert data["typ"] == "normalny"
