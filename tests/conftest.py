@@ -3,13 +3,10 @@ import sys
 import types
 import pytest
 
-# Główny katalog projektu, czyli folder z app.py
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-# Mock pyodbc przed importem app.py.
-# Dzięki temu testy nie wymagają unixODBC ani sterowników SQL Server na Macu.
 fake_pyodbc = types.ModuleType("pyodbc")
 
 def fake_connect(*args, **kwargs):
@@ -36,42 +33,25 @@ def client(app):
 
 
 class FakeRow:
-    """
-    Prosty obiekt do testów, który działa jak tuple/lista przez indeksy.
-    """
     def __init__(self, *values):
         self.values = values
 
     def __getitem__(self, index):
         return self.values[index]
 
-    def __iter__(self):
-        return iter(self.values)
-
-    def __repr__(self):
-        return f"FakeRow{self.values}"
-
 
 class FakeCursor:
-    """
-    Mock kursora SQL.
-    Pozwala testować funkcje bez połączenia z Azure SQL.
-    """
     def __init__(self, fetchone_results=None, fetchall_results=None):
-        self.queries = []
-        self.params = []
         self.fetchone_results = fetchone_results or []
         self.fetchall_results = fetchall_results or []
+        self.queries = []
         self.executed_updates = []
+        self.description = [("id",), ("name",)]  # Wymagane przez niektóre widoki Flask
 
     def execute(self, query, params=None):
         self.queries.append(query)
-        self.params.append(params)
-
-        query_upper = query.strip().upper()
-        if query_upper.startswith(("UPDATE", "INSERT", "DELETE")):
+        if any(keyword in query.upper() for keyword in ("UPDATE", "INSERT", "DELETE")):
             self.executed_updates.append((query, params))
-
         return self
 
     def fetchone(self):
@@ -86,9 +66,6 @@ class FakeCursor:
 
 
 class FakeConnection:
-    """
-    Mock połączenia z bazą.
-    """
     def __init__(self, cursor):
         self._cursor = cursor
         self.committed = False
@@ -120,15 +97,5 @@ def logged_trener(client):
         sess["user_id"] = 2
         sess["user_login"] = "trener"
         sess["rola"] = "Trener"
-        sess["token"] = "test-token"
-    return client
-
-
-@pytest.fixture
-def logged_user(client):
-    with client.session_transaction() as sess:
-        sess["user_id"] = 3
-        sess["user_login"] = "user"
-        sess["rola"] = "Uzytkownik"
         sess["token"] = "test-token"
     return client
