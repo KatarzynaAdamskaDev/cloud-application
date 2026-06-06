@@ -50,10 +50,6 @@ def get_db_conn():
     return None
 
 
-# =========================
-#  POMOCNICZE
-# =========================
-
 def hash_password(password: str) -> str:
     """Bezpieczne hashowanie hasła."""
     return generate_password_hash(password)
@@ -240,7 +236,7 @@ def validate_match_form(gosp, gosc, data, wynik_g, wynik_gosc, status_meczu, ter
         return None, "Data meczu jest wymagana."
     
     data_sql = data.replace("T", " ")
-    if len(data_sql) == 16:  # Oznacza brak sekund: YYYY-MM-DD HH:MM
+    if len(data_sql) == 16:  
         data_sql += ":00"
 
     if status_meczu not in ["planowany", "w trakcie", "zakończony"]:
@@ -1009,7 +1005,7 @@ def lost_goals(team_id):
 
 
 # =========================
-#  PANEL ADMINA – UŻYTKOWNICY
+#  PANEL ADMINA 
 # =========================
 
 @app.route("/admin")
@@ -1059,10 +1055,6 @@ def promote(uid, role):
 
     return redirect(url_for("admin_panel"))
 
-
-# =========================
-#  PANEL ADMINA – DRUŻYNY
-# =========================
 
 @app.route("/admin/druzyny", methods=["GET", "POST"])
 @role_required("Administrator")
@@ -1192,10 +1184,6 @@ def admin_druzyna_delete(team_id):
     return redirect(url_for("admin_druzyny"))
 
 
-# =========================
-#  PANEL ADMINA – ZAWODNICY
-# =========================
-
 @app.route("/admin/zawodnicy", methods=["GET", "POST"])
 @role_required("Administrator")
 def admin_zawodnicy():
@@ -1318,10 +1306,6 @@ def admin_zawodnik_delete(player_id):
 
     return redirect(url_for("admin_zawodnicy"))
 
-
-# =========================
-#  PANEL ADMINA – TERMINARZE
-# =========================
 
 @app.route("/admin/terminarze", methods=["GET", "POST"])
 @role_required("Administrator")
@@ -1467,10 +1451,6 @@ def admin_terminarz_delete(terminarz_id):
 
     return redirect(url_for("admin_terminarze"))
 
-
-# =========================
-#  PANEL ADMINA – MECZE
-# =========================
 
 @app.route("/admin/mecze", methods=["GET", "POST"])
 @role_required("Administrator")
@@ -1724,10 +1704,6 @@ def admin_raport_spojnosc():
     return render_template("admin_raport_spojnosc.html", raport=raport)
 
 
-# =========================
-#  PANEL ADMINA – GOLE
-# =========================
-
 @app.route("/admin/gole", methods=["GET", "POST"])
 @role_required("Administrator")
 def admin_gole():
@@ -1936,10 +1912,6 @@ def api_najskuteczniejszy(team_id):
     finally:
         conn.close()
 
-
-# =========================
-#  MAIN
-# =========================
 
 if __name__ == "__main__":
     app.run(debug=True)
