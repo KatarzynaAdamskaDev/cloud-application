@@ -1,19 +1,30 @@
 import app as liga_app
 from conftest import FakeCursor, FakeConnection, FakeRow
 
-
+# --- TESTY KONTROLI DOSTĘPU (RBAC) ORAZ LOGIKI ADMINISTRACYJNEJ ---
+"""
+    Test bezpieczeństwa dostępu (RBAC). 
+    Sprawdza, czy zasób dla użytkowników zalogowanych jest chroniony 
+    przed dostępem przez anonimowe zapytania.
+"""
 def test_strzelcy_requires_role(client):
-    """Test bezpieczeństwa: brak dostępu dla niezalogowanych (OWASP)."""
     response = client.get("/strzelcy", follow_redirects=False)
     assert response.status_code in [302, 303]
 
-
+"""
+    Test bezpieczńestwa uprawnień (OWASP).
+    Weryfikuje, czy standardowy użytkownik lub osoba niezalogowana nie ma 
+    dostępu do panelu zarządzania administracyjnego.
+"""
 def test_admin_panel_requires_admin(client):
-    """Test bezpieczeństwa: Blokada dostępu do panelu administratora (OWASP)."""
     response = client.get("/admin", follow_redirects=False)
     assert response.status_code in [302, 303]
 
-
+"""
+    Test pozytywnej autoryzacji administratora.
+    Potwierdza, że użytkownik z odpowiednią rolą w sesji otrzymuje dostęp 
+    do panelu po poprawnej weryfikacji w bazie danych.
+"""
 def test_admin_panel_allowed_for_admin(monkeypatch, logged_admin):
     cursor = FakeCursor(fetchall_results=[[[1, "admin", "Administrator"]]])
     conn = FakeConnection(cursor)
@@ -22,9 +33,12 @@ def test_admin_panel_allowed_for_admin(monkeypatch, logged_admin):
     response = logged_admin.get("/admin")
     assert response.status_code == 200
 
-
+"""
+    Wektor testowy dla Reguły Biznesowej RB2: 
+    Walidacja danych wejściowych – blokada utworzenia meczu, w którym 
+    gospodarz jest jednocześnie gościem (unikanie błędów logicznych).
+"""
 def test_admin_mecze_post_rejects_same_team(monkeypatch, logged_admin):
-    """Wektor testowy dla Reguły RB2: Blokada meczu, gdy gospodarz i gość to ta sama drużyna."""
     cursor = FakeCursor(
         fetchall_results=[
             [], 
@@ -47,9 +61,12 @@ def test_admin_mecze_post_rejects_same_team(monkeypatch, logged_admin):
 
     assert conn.committed is False
 
-
+"""
+    Wektor testowy dla Wymagania F9: 
+    Ochrona spójności historycznej danych. Blokada dodawania nowych meczów 
+    do terminarzy, które zostały już zamknięte (status: zakończony).
+"""
 def test_admin_mecze_post_rejects_inactive_terminarz(monkeypatch, logged_admin):
-    """Wektor testowy dla Wymagania F9: Blokada zapisu meczu w zakończonym terminarzu."""
     cursor = FakeCursor(
         fetchall_results=[
             [], 

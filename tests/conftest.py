@@ -3,10 +3,14 @@ import sys
 import types
 import pytest
 
+# --- KONFIGURACJA ŚCIEŻKI PROJEKTU ---
+# Umożliwia importowanie modułów aplikacji z poziomu folderu testowego
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
+# --- IZOLACJA BAZY DANYCH ---
+# Blokuje możliwość nawiązania rzeczywistego połączenia z bazą danych podczas testów
 fake_pyodbc = types.ModuleType("pyodbc")
 
 def fake_connect(*args, **kwargs):
@@ -17,7 +21,8 @@ sys.modules["pyodbc"] = fake_pyodbc
 
 import app as liga_app
 
-
+# --- FIXTURY ŚRODOWISKA APLIKACJI (FLASK) ---
+# Przygotowanie instancji aplikacji w trybie testowym
 @pytest.fixture
 def app():
     liga_app.app.config.update({
@@ -26,12 +31,12 @@ def app():
     })
     return liga_app.app
 
-
+# Klient testowy do symulacji zapytań HTTP
 @pytest.fixture
 def client(app):
     return app.test_client()
 
-
+# --- MOCKI WARSTWY DOSTĘPU DO DANYCH ---
 class FakeRow:
     def __init__(self, *values):
         self.values = values
@@ -80,7 +85,8 @@ class FakeConnection:
     def close(self):
         self.closed = True
 
-
+# --- FIXTURY UWIERZYTELNIANIA ---
+# Symulacja sesji użytkownika z rolą Administratora
 @pytest.fixture
 def logged_admin(client):
     with client.session_transaction() as sess:
@@ -90,7 +96,7 @@ def logged_admin(client):
         sess["token"] = "test-token"
     return client
 
-
+# Symulacja sesji użytkownika z rolą Trenera
 @pytest.fixture
 def logged_trener(client):
     with client.session_transaction() as sess:
