@@ -36,3 +36,8 @@ Następnie zapisz
 
 KROK 7. Sprawdź, czy działa poprzez kliknięcie w App Service na link domeny głównej.Jeśli coś nie działa, w menu po lewej stronie wybierz Log stream. Zobaczysz tam "na żywo", co dzieje się wewnątrz serwera i dlaczego aplikacja ewentualnie wyrzuca błąd.
 
+Dane do logowania:
+konto admina - login: test; hasło: admin123
+konto trenera - login: klient; hasło: klient123@
+konto uzytkownika - login: klient1; hasło: klient123 
+baza danych - login: testowy, hasło: test123@
